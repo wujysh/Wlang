@@ -169,7 +169,20 @@ extern FILE *yyin, *yyout;
 #define EOB_ACT_END_OF_FILE 1
 #define EOB_ACT_LAST_MATCH 2
 
-    #define YY_LESS_LINENO(n)
+    /* Note: We specifically omit the test for yy_rule_can_match_eol because it requires
+     *       access to the local variable yy_act. Since yyless() is a macro, it would break
+     *       existing scanners that call yyless() from OUTSIDE yylex. 
+     *       One obvious solution it to make yy_act a global. I tried that, and saw
+     *       a 5% performance hit in a non-yylineno scanner, because yy_act is
+     *       normally declared as a register variable-- so it is not worth it.
+     */
+    #define  YY_LESS_LINENO(n) \
+            do { \
+                int yyl;\
+                for ( yyl = n; yyl < yyleng; ++yyl )\
+                    if ( yytext[yyl] == '\n' )\
+                        --yylineno;\
+            }while(0)
     
 /* Return all but the first "n" matched characters back to the input stream. */
 #define yyless(n) \
@@ -497,6 +510,11 @@ static yyconst flex_int16_t yy_chk[162] =
        72
     } ;
 
+/* Table of booleans, true if rule could match eol. */
+static yyconst flex_int32_t yy_rule_can_match_eol[13] =
+    {   0,
+1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,     };
+
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
 
@@ -513,9 +531,8 @@ int yy_flex_debug = 0;
 char *yytext;
 #line 1 "wlang.l"
 #line 2 "wlang.l"
-#include <stdio.h>
-int line = 0, offset = 0;
-#line 519 "lex.yy.c"
+#include "common.h"
+#line 536 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -704,7 +721,7 @@ YY_DECL
     
 #line 10 "wlang.l"
 
-#line 708 "lex.yy.c"
+#line 725 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -776,6 +793,16 @@ yy_find_action:
 
 		YY_DO_BEFORE_ACTION;
 
+		if ( yy_act != YY_END_OF_BUFFER && yy_rule_can_match_eol[yy_act] )
+			{
+			int yyl;
+			for ( yyl = 0; yyl < yyleng; ++yyl )
+				if ( yytext[yyl] == '\n' )
+					   
+    yylineno++;
+;
+			}
+
 do_action:	/* This label is used only to access EOF actions. */
 
 		switch ( yy_act )
@@ -791,7 +818,7 @@ case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
 #line 11 "wlang.l"
-{line++; offset = 0;}
+{}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
@@ -842,14 +869,14 @@ YY_RULE_SETUP
 case 11:
 YY_RULE_SETUP
 #line 31 "wlang.l"
-{printf("ERROR: %s\n", yytext);}
+{printf("ERROR: line %d: %s\n", yylineno, yytext);}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 34 "wlang.l"
+#line 33 "wlang.l"
 ECHO;
 	YY_BREAK
-#line 853 "lex.yy.c"
+#line 880 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1210,6 +1237,10 @@ static int yy_get_next_buffer (void)
 
 	*--yy_cp = (char) c;
 
+    if ( c == '\n' ){
+        --yylineno;
+    }
+
 	(yytext_ptr) = yy_bp;
 	(yy_hold_char) = *yy_cp;
 	(yy_c_buf_p) = yy_cp;
@@ -1284,6 +1315,11 @@ static int yy_get_next_buffer (void)
 	c = *(unsigned char *) (yy_c_buf_p);	/* cast for 8-bit char's */
 	*(yy_c_buf_p) = '\0';	/* preserve yytext */
 	(yy_hold_char) = *++(yy_c_buf_p);
+
+	if ( c == '\n' )
+		   
+    yylineno++;
+;
 
 	return c;
 }
@@ -1755,6 +1791,9 @@ static int yy_init_globals (void)
      * This function is called from yylex_destroy(), so don't allocate here.
      */
 
+    /* We do not touch yylineno unless the option is enabled. */
+    yylineno =  1;
+    
     (yy_buffer_stack) = 0;
     (yy_buffer_stack_top) = 0;
     (yy_buffer_stack_max) = 0;
@@ -1847,20 +1886,32 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 34 "wlang.l"
+#line 33 "wlang.l"
 
 
 
-int yywrap() {
-    return 1;
+struct Token getToken() {
+    struct Token token;
+    token.type = yylex();
+    strcpy(token.sVal, yytext);
+    return token;
 }
 
 void main(int argc, char** argv) {
     if (argc > 1) {
-        yyin = fopen(argv[1], "r");
+        FILE *file = fopen(argv[1], "r");
+        if (!file) {
+            fprintf(stderr, "could not open %s\n", argv[1]);
+            exit(1);
+        }
+        yyin = file;
     } else {
         yyin = stdin;
     }
     yylex();
+}
+
+int yywrap() {
+    return 1;
 }
 

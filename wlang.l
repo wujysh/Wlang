@@ -1,14 +1,14 @@
 %{
-#include <stdio.h>
-int line = 0, offset = 0;
+#include "common.h"
 %}
 
 DIGIT    [0-9]
 ID       [_a-zA-Z][_a-zA-Z0-9]*
 STRING   ([^\"\\]?(\\.)?(\\\n)?)*
+%option yylineno
 
 %%
-[ \n\t]+                                                     {line++; offset = 0;}
+[ \n\t]+                                                     {}
 
 if|else|while|do|integer|float|string|input|output|function|end|def|as|begin        {printf("（5，%s）\n", yytext);}
 
@@ -28,19 +28,31 @@ and|or                                                      {printf("（8，%s�
 
 "{"|"}"|"("|")"|";"|","                                     {printf("（9，%s）\n", yytext);}
 
-.                                                           {printf("ERROR: %s\n", yytext);}
+.                                                           {printf("ERROR: line %d: %s\n", yylineno, yytext);}
 
 %%
 
-int yywrap() {
-    return 1;
+struct Token getToken() {
+    struct Token token;
+    token.type = yylex();
+    strcpy(token.sVal, yytext);
+    return token;
 }
 
 void main(int argc, char** argv) {
     if (argc > 1) {
-        yyin = fopen(argv[1], "r");
+        FILE *file = fopen(argv[1], "r");
+        if (!file) {
+            fprintf(stderr, "could not open %s\n", argv[1]);
+            exit(1);
+        }
+        yyin = file;
     } else {
         yyin = stdin;
     }
     yylex();
+}
+
+int yywrap() {
+    return 1;
 }
