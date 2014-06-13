@@ -1,11 +1,9 @@
 %{
 #include <string>
-#include <wlang.hpp>
-#include "common.h"
-#define SAVE_TOKEN yylval.string = new std::string(yytext, yyleng)
+#include "parser.hpp"
+#define SAVE_TOKEN yylval.nstring = new std::string(yytext, yyleng)
 #define TOKEN(t) (yylval.token = t)
 extern "C" int yywrap() {}
-
 %}
 
 DIGIT    [0-9]
@@ -57,16 +55,16 @@ or                                      return TOKEN(KOR);
 
 "{"                                     return TOKEN(TLEFTBRACE);
 "}"                                     return TOKEN(TRIGHTBRACE);
-"("                                     return TOKEN(TLEFTBRACLET);
+"("                                     return TOKEN(TLEFTBRACKET);
 ")"                                     return TOKEN(TRIGHTBRACKET);
 ";"                                     return TOKEN(TSEMICOLON);
 ","                                     return TOKEN(TCOMMA);
 
-.                                       return TOKEN(TERROR);
+.                                       printf("Unknown token!\n"); yyterminate();
 
 %%
-
-void main(int argc, char** argv) {
+/*
+int main(int argc, char** argv) {
     if (argc > 1) {
         FILE *file = fopen(argv[1], "r");
         if (!file) {
@@ -78,4 +76,6 @@ void main(int argc, char** argv) {
         yyin = stdin;
     }
     yylex();
+    return 0;
 }
+*/

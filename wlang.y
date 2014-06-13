@@ -1,30 +1,31 @@
 %{
-    #include "common.h"
-    NProgram *programBlock; /* the top level root node of our final AST */
-
-    extern int yylex();
-    void yyerror(const char *s) { printf("ERROR: %s\n", s); }
+   class NProgram;
+   NProgram *programBlock; /* the top level root node of our final AST */
+   extern int yylex();
+   void yyerror(char const *);
+   
 %}
+
+%code requires {
+   #include "common.h"
+}
 
 /* Represents the many different ways we can access our data */
 %union {
-    Node *node;
-    NExpression *expression;
-    NStatement *statement;
-    /*NDefStatement *def_statement;
-    NIfStatement *if_statement;
-    NWhileStatement *while_statement;
-    NInputStatement *input_statement;
-    NOutputStatement *output_statement;
-    NAssignStatement *assign_statement;
-    NFunctionStatement *function_statement;*/
-    NProgram *program;
-    NBinaryOperator *binary_operator;
-    std::vector<NStatement*> *statement_vector;
-    std::vector<NFunctionStatement*> *function_vector;
-    std::vector<NExpression*> *expression_vector;
-    std::vector<NIdentifier*> *identifier_vector;
-    std::string *string;
+    class Node *node;
+    class NExpression *expression;
+    class NStatement *statement;
+    class NFunctionStatement *function_statement;
+    class NProgram *program;
+    class NBinaryOperator *binary_operator;
+    class NIdentifier *identifier;
+    class NInteger *ninteger;
+    class NFloat *nfloat;
+    vector<NStatement*> *statement_vector;
+    FunctionList *function_vector;
+    ExpressionList *expression_vector;
+    IdentifierList *identifier_vector;
+    std::string *nstring;
     int token;
 }
 
@@ -32,47 +33,43 @@
    match our tokens.l lex file. We also define the node type
    they represent.
  */
-%token <string> TIDENTIFIER TINTEGER TFLOAT TSTRING
+%token <nstring> TIDENTIFIER TINTEGER TFLOAT TSTRING
 %token <token> KIF KELSE KWHILE KDO KINTEGER KFLOAT KSTRING KINPUT KOUTPUT KFUNCTION KEND KDEF KAS KBEGIN
 %token <token> KAND KOR
 %token <token> TPLUS TMINUS TMULTIPLY TDEVIDE TASSIGN
 %token <token> TLESS TLESSEQUAL TGREATER TGREATEREQUAL TNOTEQUAL TEQUAL
 %token <token> TLEFTBRACE TRIGHTBRACE TLEFTBRACKET TRIGHTBRACKET TSEMICOLON TCOMMA
+%token <token> TERROR
 
 /* Define the type of node our nonterminal symbols represent.
    The types refer to the %union declaration above. Ex: when
    we call an ident (defined by union type ident) we are really
    calling an (NIdentifier*). It makes the compiler happy.
  */
-%type <expression> expression boolexpression
-%type <statement> statement defstatement ifstatement whilestatement inputstatement outputstatement assignstatement function
-/*%type <def_statement>
-%type <if_statement>
-%type <while_statement>
-%type <input_statement>
-%type <output_statement>
-%type <assign_statement>
-%type <function_statement>*/
+//%type <expression> expression boolexpression
+%type <statement> statement defstatement ifstatement whilestatement inputstatement outputstatement assignstatement
+%type <function_statement> function
 %type <statement_vector> statementblock statements
 %type <function_vector> functions
 %type <expression_vector> expressions
 %type <identifier_vector> identifiers
 %type <token> datatype relation
-%type <binary_operator> term factor boolterm boolfactor
+%type <binary_operator> expression boolexpression term factor boolterm boolfactor
 %type <program> program
+%type <identifier> identifier;
 
 %start program
 
 %%
 
-program : functions { programBlock = $1; }
+program : functions { programBlock = new NProgram(*$1); }
 	;
 
 functions : function { $$ = new FunctionList(); $$->push_back($1); }
           | functions function { $$->push_back($2); }
           ;
 
-function : KFUNCTION TIDENTIFIER TLEFTBRACKET TRIGHTBRACKET statementblock KEND KFUNCTION { $$ = new NFunctionStatement(NIdentifier*$2), *$5); }
+function : KFUNCTION identifier TLEFTBRACKET TRIGHTBRACKET statementblock KEND KFUNCTION { $$ = new NFunctionStatement(*$2, *$5); }
          ;
 
 statementblock : KBEGIN statements KEND { $$ = $2; }
@@ -85,12 +82,15 @@ statements : statement { $$ = new StatementList(); $$->push_back($1); }
 statement : ifstatement | assignstatement | whilestatement | inputstatement | outputstatement | defstatement
           ;
 
-defstatement : KDEF identifiers KAS datatype TSEMICOLON { $$ = new NDefStatement(*$4, *$2); }
+defstatement : KDEF identifiers KAS datatype TSEMICOLON { $$ = new NDefStatement($4, *$2); }
              ;
 
-identifiers : TIDENTIFIER { $$ = new IdentifierList(); $$->push_back(NIdentifier(*$1)); }
-            | identifiers TCOMMA TIDENTIFIER { $1->push_back(NIdentifier(*$3)); }
+identifiers : identifier { $$ = new IdentifierList(); $$->push_back($1); }
+            | identifiers TCOMMA identifier { $1->push_back($3); }
             ;
+
+identifier : TIDENTIFIER { $$ = new NIdentifier(*$1); delete $1; }
+           ;
 
 datatype : KINTEGER | KFLOAT | KSTRING
          ;
@@ -105,10 +105,10 @@ expressions : expression { $$ = new ExpressionList(); $$->push_back($1); }
             | expressions TCOMMA expression { $1->push_back($3); }
             ;
 
-assignstatement : TIDENTIFIER TASSIGN expression TSEMICOLON { $$ = new NAssignStatement(NIdentifier(*$1), *$3); }
+assignstatement : identifier TASSIGN expression TSEMICOLON { $$ = new NAssignStatement(*$1, *$3); }
                 ;
 
-ifstatement : KIF boolexpression statementblock { $$ = new NIfStatement(*$2, *$3, NULL); }
+ifstatement : KIF boolexpression statementblock { $$ = new NIfStatement(*$2, *$3); }
             | KIF boolexpression statementblock KELSE statementblock { $$ = new NIfStatement(*$2, *$3, *$5); }
             ;
 
@@ -125,9 +125,9 @@ term : factor { $$ = $1; }
      | term TDEVIDE factor { $$ = new NBinaryOperator(*$1, $2, *$3); }
      ;
 
-factor : TIDENTIFIER { $$ = new NIdentifier(*$1); delete $1; }
-       | TINTEGER { $$ = new NInteger(atol($1->c_str())); delete $1; }
-       | TFLOAT { $$ = new NDouble(atof($1->c_str())); delete $1; }
+factor : identifier { $<identifier>$ = $1; }
+       | TINTEGER { $<ninteger>$ = new NInteger(atol($1->c_str())); delete $1; }
+       | TFLOAT { $<nfloat>$ = new NFloat(atof($1->c_str())); delete $1; }
        | TLEFTBRACKET expression TRIGHTBRACKET { $$ = $2; }
        ;
 
@@ -147,3 +147,6 @@ relation : TLESS | TLESSEQUAL | TGREATER | TGREATEREQUAL | TEQUAL | TNOTEQUAL
          ;
 
 %%
+#include <iostream>
+//using namespace std;
+void yyerror(const char *s) { cout << "ERROR: " << s << endl; }
