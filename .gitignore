@@ -2,3 +2,5 @@
 *.*~
 *.out
 /data
+/bin
+/obj
