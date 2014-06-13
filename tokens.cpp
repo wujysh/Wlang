@@ -9,7 +9,7 @@
 #define FLEX_SCANNER
 #define YY_FLEX_MAJOR_VERSION 2
 #define YY_FLEX_MINOR_VERSION 5
-#define YY_FLEX_SUBMINOR_VERSION 35
+#define YY_FLEX_SUBMINOR_VERSION 37
 #if YY_FLEX_SUBMINOR_VERSION > 0
 #define FLEX_BETA
 #endif
@@ -142,15 +142,7 @@ typedef unsigned int flex_uint32_t;
 
 /* Size of default input buffer. */
 #ifndef YY_BUF_SIZE
-#ifdef __ia64__
-/* On IA-64, the buffer size is 16k, not 8k.
- * Moreover, YY_BUF_SIZE is 2*YY_READ_BUF_SIZE in the general case.
- * Ditto for the __ia64__ case accordingly.
- */
-#define YY_BUF_SIZE 32768
-#else
 #define YY_BUF_SIZE 16384
-#endif /* __ia64__ */
 #endif
 
 /* The state buf must be large enough to hold one state per character in the main buffer.
@@ -162,7 +154,12 @@ typedef unsigned int flex_uint32_t;
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 #endif
 
-extern int yyleng;
+#ifndef YY_TYPEDEF_YY_SIZE_T
+#define YY_TYPEDEF_YY_SIZE_T
+typedef size_t yy_size_t;
+#endif
+
+extern yy_size_t yyleng;
 
 extern FILE *yyin, *yyout;
 
@@ -201,11 +198,6 @@ extern FILE *yyin, *yyout;
 
 #define unput(c) yyunput( c, (yytext_ptr)  )
 
-#ifndef YY_TYPEDEF_YY_SIZE_T
-#define YY_TYPEDEF_YY_SIZE_T
-typedef size_t yy_size_t;
-#endif
-
 #ifndef YY_STRUCT_YY_BUFFER_STATE
 #define YY_STRUCT_YY_BUFFER_STATE
 struct yy_buffer_state
@@ -223,7 +215,7 @@ struct yy_buffer_state
 	/* Number of characters read into yy_ch_buf, not including EOB
 	 * characters.
 	 */
-	int yy_n_chars;
+	yy_size_t yy_n_chars;
 
 	/* Whether we "own" the buffer - i.e., we know we created it,
 	 * and can realloc() it to grow it, and should free() it to
@@ -293,8 +285,8 @@ static YY_BUFFER_STATE * yy_buffer_stack = 0; /**< Stack as an array. */
 
 /* yy_hold_char holds the character lost when yytext is formed. */
 static char yy_hold_char;
-static int yy_n_chars;		/* number of characters read into yy_ch_buf */
-int yyleng;
+static yy_size_t yy_n_chars;		/* number of characters read into yy_ch_buf */
+yy_size_t yyleng;
 
 /* Points to current character in buffer. */
 static char *yy_c_buf_p = (char *) 0;
@@ -322,7 +314,7 @@ static void yy_init_buffer (YY_BUFFER_STATE b,FILE *file  );
 
 YY_BUFFER_STATE yy_scan_buffer (char *base,yy_size_t size  );
 YY_BUFFER_STATE yy_scan_string (yyconst char *yy_str  );
-YY_BUFFER_STATE yy_scan_bytes (yyconst char *bytes,int len  );
+YY_BUFFER_STATE yy_scan_bytes (yyconst char *bytes,yy_size_t len  );
 
 void *yyalloc (yy_size_t  );
 void *yyrealloc (void *,yy_size_t  );
@@ -546,7 +538,7 @@ char *yytext;
 #define SAVE_TOKEN yylval.nstring = new std::string(yytext, yyleng)
 #define TOKEN(t) (yylval.token = t)
 extern "C" int yywrap() {}
-#line 550 "tokens.cpp"
+#line 542 "tokens.cpp"
 
 #define INITIAL 0
 
@@ -557,7 +549,7 @@ extern "C" int yywrap() {}
  */
 #include <unistd.h>
 #endif
-
+    
 #ifndef YY_EXTRA_TYPE
 #define YY_EXTRA_TYPE void *
 #endif
@@ -585,7 +577,7 @@ FILE *yyget_out (void );
 
 void yyset_out  (FILE * out_str  );
 
-int yyget_leng (void );
+yy_size_t yyget_leng (void );
 
 char *yyget_text (void );
 
@@ -627,12 +619,7 @@ static int input (void );
 
 /* Amount of stuff to slurp up with each read. */
 #ifndef YY_READ_BUF_SIZE
-#ifdef __ia64__
-/* On IA-64, the buffer size is 16k, not 8k */
-#define YY_READ_BUF_SIZE 16384
-#else
 #define YY_READ_BUF_SIZE 8192
-#endif /* __ia64__ */
 #endif
 
 /* Copy whatever the last rule matched to the standard output. */
@@ -735,7 +722,7 @@ YY_DECL
     
 #line 14 "wlang.l"
 
-#line 739 "tokens.cpp"
+#line 726 "tokens.cpp"
 
 	if ( !(yy_init) )
 		{
@@ -809,7 +796,7 @@ yy_find_action:
 
 		if ( yy_act != YY_END_OF_BUFFER && yy_rule_can_match_eol[yy_act] )
 			{
-			int yyl;
+			yy_size_t yyl;
 			for ( yyl = 0; yyl < yyleng; ++yyl )
 				if ( yytext[yyl] == '\n' )
 					   
@@ -837,200 +824,200 @@ YY_RULE_SETUP
 case 2:
 YY_RULE_SETUP
 #line 17 "wlang.l"
-return TOKEN(KIF);
+{ printf("%s", yytext); return TOKEN(KIF); }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
 #line 18 "wlang.l"
-return TOKEN(KELSE);
+{ printf("%s", yytext); return TOKEN(KELSE); }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
 #line 19 "wlang.l"
-return TOKEN(KWHILE);
+{ printf("%s", yytext); return TOKEN(KWHILE); }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
 #line 20 "wlang.l"
-return TOKEN(KDO);
+{ printf("%s", yytext); return TOKEN(KDO); }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
 #line 21 "wlang.l"
-return TOKEN(KINTEGER);
+{ printf("%s", yytext); return TOKEN(KINTEGER); }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
 #line 22 "wlang.l"
-return TOKEN(KFLOAT);
+{ printf("%s", yytext); return TOKEN(KFLOAT); }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
 #line 23 "wlang.l"
-return TOKEN(KSTRING);
+{ printf("%s", yytext); return TOKEN(KSTRING); }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
 #line 24 "wlang.l"
-return TOKEN(KINPUT);
+{ printf("%s", yytext); return TOKEN(KINPUT); }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
 #line 25 "wlang.l"
-return TOKEN(KOUTPUT);
+{ printf("%s", yytext); return TOKEN(KOUTPUT); }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
 #line 26 "wlang.l"
-return TOKEN(KFUNCTION);
+{ printf("%s", yytext); return TOKEN(KFUNCTION); }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
 #line 27 "wlang.l"
-return TOKEN(KEND);
+{ printf("%s", yytext); return TOKEN(KEND); }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
 #line 28 "wlang.l"
-return TOKEN(KDEF);
+{ printf("%s", yytext); return TOKEN(KDEF); }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
 #line 29 "wlang.l"
-return TOKEN(KAS);
+{ printf("%s", yytext); return TOKEN(KAS); }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
 #line 30 "wlang.l"
-return TOKEN(KBEGIN);
+{ printf("%s", yytext); return TOKEN(KBEGIN); }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
 #line 32 "wlang.l"
-return TOKEN(KAND);
+{ printf("%s", yytext); return TOKEN(KAND); }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
 #line 33 "wlang.l"
-return TOKEN(KOR);
+{ printf("%s", yytext); return TOKEN(KOR); }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
 #line 35 "wlang.l"
-SAVE_TOKEN; return TIDENTIFIER;
+{ printf("%s", yytext); SAVE_TOKEN; return TIDENTIFIER; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
 #line 37 "wlang.l"
-SAVE_TOKEN; return TINTEGER;
+{ printf("%s", yytext); SAVE_TOKEN; return TINTEGER; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
 #line 39 "wlang.l"
-SAVE_TOKEN; return TFLOAT;
+{ printf("%s", yytext); SAVE_TOKEN; return TFLOAT; }
 	YY_BREAK
 case 21:
 /* rule 21 can match eol */
 YY_RULE_SETUP
 #line 41 "wlang.l"
-SAVE_TOKEN; return TSTRING;
+{ printf("%s", yytext); SAVE_TOKEN; return TSTRING; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
 #line 43 "wlang.l"
-return TOKEN(TPLUS);
+{ printf("%s", yytext); return TOKEN(TPLUS); }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
 #line 44 "wlang.l"
-return TOKEN(TMINUS);
+{ printf("%s", yytext); return TOKEN(TMINUS); }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
 #line 45 "wlang.l"
-return TOKEN(TMULTIPLY);
+{ printf("%s", yytext); return TOKEN(TMULTIPLY); }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
 #line 46 "wlang.l"
-return TOKEN(TDEVIDE);
+{ printf("%s", yytext); return TOKEN(TDEVIDE); }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
 #line 47 "wlang.l"
-return TOKEN(TASSIGN);
+{ printf("%s", yytext); return TOKEN(TASSIGN); }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
 #line 49 "wlang.l"
-return TOKEN(TLESS);
+{ printf("%s", yytext); return TOKEN(TLESS); }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
 #line 50 "wlang.l"
-return TOKEN(TLESSEQUAL);
+{ printf("%s", yytext); return TOKEN(TLESSEQUAL); }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
 #line 51 "wlang.l"
-return TOKEN(TGREATER);
+{ printf("%s", yytext); return TOKEN(TGREATER); }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
 #line 52 "wlang.l"
-return TOKEN(TGREATEREQUAL);
+{ printf("%s", yytext); return TOKEN(TGREATEREQUAL); }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
 #line 53 "wlang.l"
-return TOKEN(TNOTEQUAL);
+{ printf("%s", yytext); return TOKEN(TNOTEQUAL); }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
 #line 54 "wlang.l"
-return TOKEN(TEQUAL);
+{ printf("%s", yytext); return TOKEN(TEQUAL); }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
 #line 56 "wlang.l"
-return TOKEN(TLEFTBRACE);
+{ printf("%s", yytext); return TOKEN(TLEFTBRACE); }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
 #line 57 "wlang.l"
-return TOKEN(TRIGHTBRACE);
+{ printf("%s", yytext); return TOKEN(TRIGHTBRACE); }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
 #line 58 "wlang.l"
-return TOKEN(TLEFTBRACKET);
+{ printf("%s", yytext); return TOKEN(TLEFTBRACKET); }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
 #line 59 "wlang.l"
-return TOKEN(TRIGHTBRACKET);
+{ printf("%s", yytext); return TOKEN(TRIGHTBRACKET); }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
 #line 60 "wlang.l"
-return TOKEN(TSEMICOLON);
+{ printf("%s", yytext); return TOKEN(TSEMICOLON); }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
 #line 61 "wlang.l"
-return TOKEN(TCOMMA);
+{ printf("%s", yytext); return TOKEN(TCOMMA); }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
 #line 63 "wlang.l"
-printf("Unknown token!\n"); yyterminate();
+{ printf("Unknown token!\n"); yyterminate(); }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
 #line 65 "wlang.l"
 ECHO;
 	YY_BREAK
-#line 1034 "tokens.cpp"
+#line 1021 "tokens.cpp"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1216,21 +1203,21 @@ static int yy_get_next_buffer (void)
 
 	else
 		{
-			int num_to_read =
+			yy_size_t num_to_read =
 			YY_CURRENT_BUFFER_LVALUE->yy_buf_size - number_to_move - 1;
 
 		while ( num_to_read <= 0 )
 			{ /* Not enough room in the buffer - grow it. */
 
 			/* just a shorter name for the current buffer */
-			YY_BUFFER_STATE b = YY_CURRENT_BUFFER;
+			YY_BUFFER_STATE b = YY_CURRENT_BUFFER_LVALUE;
 
 			int yy_c_buf_p_offset =
 				(int) ((yy_c_buf_p) - b->yy_ch_buf);
 
 			if ( b->yy_is_our_buffer )
 				{
-				int new_size = b->yy_buf_size * 2;
+				yy_size_t new_size = b->yy_buf_size * 2;
 
 				if ( new_size <= 0 )
 					b->yy_buf_size += b->yy_buf_size / 8;
@@ -1261,7 +1248,7 @@ static int yy_get_next_buffer (void)
 
 		/* Read in more data. */
 		YY_INPUT( (&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move]),
-			(yy_n_chars), (size_t) num_to_read );
+			(yy_n_chars), num_to_read );
 
 		YY_CURRENT_BUFFER_LVALUE->yy_n_chars = (yy_n_chars);
 		}
@@ -1356,7 +1343,7 @@ static int yy_get_next_buffer (void)
 	yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
 	yy_is_jam = (yy_current_state == 96);
 
-	return yy_is_jam ? 0 : yy_current_state;
+		return yy_is_jam ? 0 : yy_current_state;
 }
 
     static void yyunput (int c, register char * yy_bp )
@@ -1371,7 +1358,7 @@ static int yy_get_next_buffer (void)
 	if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
 		{ /* need to shift things up to make room */
 		/* +2 for EOB chars. */
-		register int number_to_move = (yy_n_chars) + 2;
+		register yy_size_t number_to_move = (yy_n_chars) + 2;
 		register char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
 					YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
 		register char *source =
@@ -1424,7 +1411,7 @@ static int yy_get_next_buffer (void)
 
 		else
 			{ /* need more input */
-			int offset = (yy_c_buf_p) - (yytext_ptr);
+			yy_size_t offset = (yy_c_buf_p) - (yytext_ptr);
 			++(yy_c_buf_p);
 
 			switch ( yy_get_next_buffer(  ) )
@@ -1589,10 +1576,6 @@ static void yy_load_buffer_state  (void)
 	yyfree((void *) b  );
 }
 
-#ifndef __cplusplus
-extern int isatty (int );
-#endif /* __cplusplus */
-    
 /* Initializes or reinitializes a buffer.
  * This function is sometimes called more than once on the same buffer,
  * such as during a yyrestart() or at EOF.
@@ -1705,7 +1688,7 @@ void yypop_buffer_state (void)
  */
 static void yyensure_buffer_stack (void)
 {
-	int num_to_alloc;
+	yy_size_t num_to_alloc;
     
 	if (!(yy_buffer_stack)) {
 
@@ -1802,12 +1785,12 @@ YY_BUFFER_STATE yy_scan_string (yyconst char * yystr )
  * 
  * @return the newly allocated buffer state object.
  */
-YY_BUFFER_STATE yy_scan_bytes  (yyconst char * yybytes, int  _yybytes_len )
+YY_BUFFER_STATE yy_scan_bytes  (yyconst char * yybytes, yy_size_t  _yybytes_len )
 {
 	YY_BUFFER_STATE b;
 	char *buf;
 	yy_size_t n;
-	int i;
+	yy_size_t i;
     
 	/* Get memory for full buffer, including space for trailing EOB's. */
 	n = _yybytes_len + 2;
@@ -1889,7 +1872,7 @@ FILE *yyget_out  (void)
 /** Get the length of the current token.
  * 
  */
-int yyget_leng  (void)
+yy_size_t yyget_leng  (void)
 {
         return yyleng;
 }

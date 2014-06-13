@@ -11,8 +11,7 @@ begin
 	def y,z as float;
 	def str as string;
 	input x, y, z, str;
-	str = "wlang";
-	while (x < y and y <= 5.0) or str == "clang" do
+	while (x < y and y <= 5.0) or y == z do
 	begin
 		if x >= 2 and (y < z or x <> z)
 		begin

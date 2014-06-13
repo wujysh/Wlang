@@ -14,53 +14,53 @@ STRING   ([^\"\\]?(\\.)?(\\\n)?)*
 %%
 [ \n\t]                                 {}
 
-if                                      return TOKEN(KIF);
-else                                    return TOKEN(KELSE);
-while                                   return TOKEN(KWHILE);
-do                                      return TOKEN(KDO);
-integer                                 return TOKEN(KINTEGER);
-float                                   return TOKEN(KFLOAT);
-string                                  return TOKEN(KSTRING);
-input                                   return TOKEN(KINPUT);
-output                                  return TOKEN(KOUTPUT);
-function                                return TOKEN(KFUNCTION);
-end                                     return TOKEN(KEND);
-def                                     return TOKEN(KDEF);
-as                                      return TOKEN(KAS);
-begin                                   return TOKEN(KBEGIN);
+if                                      { printf("%s", yytext); return TOKEN(KIF); }
+else                                    { printf("%s", yytext); return TOKEN(KELSE); }
+while                                   { printf("%s", yytext); return TOKEN(KWHILE); }
+do                                      { printf("%s", yytext); return TOKEN(KDO); }
+integer                                 { printf("%s", yytext); return TOKEN(KINTEGER); }
+float                                   { printf("%s", yytext); return TOKEN(KFLOAT); }
+string                                  { printf("%s", yytext); return TOKEN(KSTRING); }
+input                                   { printf("%s", yytext); return TOKEN(KINPUT); }
+output                                  { printf("%s", yytext); return TOKEN(KOUTPUT); }
+function                                { printf("%s", yytext); return TOKEN(KFUNCTION); }
+end                                     { printf("%s", yytext); return TOKEN(KEND); }
+def                                     { printf("%s", yytext); return TOKEN(KDEF); }
+as                                      { printf("%s", yytext); return TOKEN(KAS); }
+begin                                   { printf("%s", yytext); return TOKEN(KBEGIN); }
 
-and                                     return TOKEN(KAND);
-or                                      return TOKEN(KOR);
+and                                     { printf("%s", yytext); return TOKEN(KAND); }
+or                                      { printf("%s", yytext); return TOKEN(KOR); }
 
-{ID}                                    SAVE_TOKEN; return TIDENTIFIER;
+{ID}                                    { printf("%s", yytext); SAVE_TOKEN; return TIDENTIFIER; }
 
-{DIGIT}+                                SAVE_TOKEN; return TINTEGER;
+{DIGIT}+                                { printf("%s", yytext); SAVE_TOKEN; return TINTEGER; }
 
-{DIGIT}+"."{DIGIT}*                     SAVE_TOKEN; return TFLOAT;
+{DIGIT}+"."{DIGIT}*                     { printf("%s", yytext); SAVE_TOKEN; return TFLOAT; }
 
-"\""{STRING}"\""                        SAVE_TOKEN; return TSTRING;
+"\""{STRING}"\""                        { printf("%s", yytext); SAVE_TOKEN; return TSTRING; }
 
-"+"                                     return TOKEN(TPLUS);
-"-"                                     return TOKEN(TMINUS);
-"*"                                     return TOKEN(TMULTIPLY);
-"/"                                     return TOKEN(TDEVIDE);
-"="                                     return TOKEN(TASSIGN);
+"+"                                     { printf("%s", yytext); return TOKEN(TPLUS); }
+"-"                                     { printf("%s", yytext); return TOKEN(TMINUS); }
+"*"                                     { printf("%s", yytext); return TOKEN(TMULTIPLY); }
+"/"                                     { printf("%s", yytext); return TOKEN(TDEVIDE); }
+"="                                     { printf("%s", yytext); return TOKEN(TASSIGN); }
 
-"<"                                     return TOKEN(TLESS);
-"<="                                    return TOKEN(TLESSEQUAL);
-">"                                     return TOKEN(TGREATER);
-">="                                    return TOKEN(TGREATEREQUAL);
-"<>"                                    return TOKEN(TNOTEQUAL);
-"=="                                    return TOKEN(TEQUAL);
+"<"                                     { printf("%s", yytext); return TOKEN(TLESS); }
+"<="                                    { printf("%s", yytext); return TOKEN(TLESSEQUAL); }
+">"                                     { printf("%s", yytext); return TOKEN(TGREATER); }
+">="                                    { printf("%s", yytext); return TOKEN(TGREATEREQUAL); }
+"<>"                                    { printf("%s", yytext); return TOKEN(TNOTEQUAL); }
+"=="                                    { printf("%s", yytext); return TOKEN(TEQUAL); }
 
-"{"                                     return TOKEN(TLEFTBRACE);
-"}"                                     return TOKEN(TRIGHTBRACE);
-"("                                     return TOKEN(TLEFTBRACKET);
-")"                                     return TOKEN(TRIGHTBRACKET);
-";"                                     return TOKEN(TSEMICOLON);
-","                                     return TOKEN(TCOMMA);
+"{"                                     { printf("%s", yytext); return TOKEN(TLEFTBRACE); }
+"}"                                     { printf("%s", yytext); return TOKEN(TRIGHTBRACE); }
+"("                                     { printf("%s", yytext); return TOKEN(TLEFTBRACKET); }
+")"                                     { printf("%s", yytext); return TOKEN(TRIGHTBRACKET); }
+";"                                     { printf("%s", yytext); return TOKEN(TSEMICOLON); }
+","                                     { printf("%s", yytext); return TOKEN(TCOMMA); }
 
-.                                       printf("Unknown token!\n"); yyterminate();
+.                                       { printf("Unknown token!\n"); yyterminate(); }
 
 %%
 /*
