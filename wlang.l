@@ -1,5 +1,11 @@
 %{
+#include <string>
+#include <wlang.hpp>
 #include "common.h"
+#define SAVE_TOKEN yylval.string = new std::string(yytext, yyleng)
+#define TOKEN(t) (yylval.token = t)
+extern "C" int yywrap() {}
+
 %}
 
 DIGIT    [0-9]
@@ -8,36 +14,57 @@ STRING   ([^\"\\]?(\\.)?(\\\n)?)*
 %option yylineno
 
 %%
-[ \n\t]+                                                     {}
+[ \n\t]                                 {}
 
-if|else|while|do|integer|float|string|input|output|function|end|def|as|begin        {printf("（5，%s）\n", yytext);}
+if                                      return TOKEN(KIF);
+else                                    return TOKEN(KELSE);
+while                                   return TOKEN(KWHILE);
+do                                      return TOKEN(KDO);
+integer                                 return TOKEN(KINTEGER);
+float                                   return TOKEN(KFLOAT);
+string                                  return TOKEN(KSTRING);
+input                                   return TOKEN(KINPUT);
+output                                  return TOKEN(KOUTPUT);
+function                                return TOKEN(KFUNCTION);
+end                                     return TOKEN(KEND);
+def                                     return TOKEN(KDEF);
+as                                      return TOKEN(KAS);
+begin                                   return TOKEN(KBEGIN);
 
-and|or                                                      {printf("（8，%s）\n", yytext);}
+and                                     return TOKEN(KAND);
+or                                      return TOKEN(KOR);
 
-{ID}                                                        {printf("（1，%s）\n", yytext);}
+{ID}                                    SAVE_TOKEN; return TIDENTIFIER;
 
-{DIGIT}+                                                    {printf("（2，%s）\n", yytext);}
+{DIGIT}+                                SAVE_TOKEN; return TINTEGER;
 
-{DIGIT}+"."{DIGIT}*                                         {printf("（3，%s）\n", yytext);}
+{DIGIT}+"."{DIGIT}*                     SAVE_TOKEN; return TFLOAT;
 
-"\""{STRING}"\""                                            {printf("（4，%s）\n", yytext);}
+"\""{STRING}"\""                        SAVE_TOKEN; return TSTRING;
 
-"+"|"-"|"*"|"/"|"="                                         {printf("（6，%s）\n", yytext);}
+"+"                                     return TOKEN(TPLUS);
+"-"                                     return TOKEN(TMINUS);
+"*"                                     return TOKEN(TMULTIPLY);
+"/"                                     return TOKEN(TDEVIDE);
+"="                                     return TOKEN(TASSIGN);
 
-"<"|"<="|">"|">="|"<>"|"=="                                 {printf("（7，%s）\n", yytext);}
+"<"                                     return TOKEN(TLESS);
+"<="                                    return TOKEN(TLESSEQUAL);
+">"                                     return TOKEN(TGREATER);
+">="                                    return TOKEN(TGREATEREQUAL);
+"<>"                                    return TOKEN(TNOTEQUAL);
+"=="                                    return TOKEN(TEQUAL);
 
-"{"|"}"|"("|")"|";"|","                                     {printf("（9，%s）\n", yytext);}
+"{"                                     return TOKEN(TLEFTBRACE);
+"}"                                     return TOKEN(TRIGHTBRACE);
+"("                                     return TOKEN(TLEFTBRACLET);
+")"                                     return TOKEN(TRIGHTBRACKET);
+";"                                     return TOKEN(TSEMICOLON);
+","                                     return TOKEN(TCOMMA);
 
-.                                                           {printf("ERROR: line %d: %s\n", yylineno, yytext);}
+.                                       return TOKEN(TERROR);
 
 %%
-
-struct Token getToken() {
-    struct Token token;
-    token.type = yylex();
-    strcpy(token.sVal, yytext);
-    return token;
-}
 
 void main(int argc, char** argv) {
     if (argc > 1) {
@@ -51,8 +78,4 @@ void main(int argc, char** argv) {
         yyin = stdin;
     }
     yylex();
-}
-
-int yywrap() {
-    return 1;
 }
