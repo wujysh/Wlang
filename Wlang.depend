@@ -1,0 +1,32 @@
+# depslib dependency file v1.0
+1402672660 source:c:\users\wujq\documents\github\wlang\parser.cpp
+	"common.h"
+	<stddef.h>
+	<libintl.h>
+	<alloca.h>
+	<malloc.h>
+	<stdlib.h>
+	<stdlib.h>
+	<stdio.h>
+	<iostream>
+
+1402668337 c:\users\wujq\documents\github\wlang\common.h
+	<iostream>
+	<cstdlib>
+	<cstdio>
+	<vector>
+	<string>
+
+1402672664 source:c:\users\wujq\documents\github\wlang\tokens.cpp
+	<stdio.h>
+	<string.h>
+	<errno.h>
+	<stdlib.h>
+	<inttypes.h>
+	<string>
+	"parser.hpp"
+	<unistd.h>
+
+1402672660 c:\users\wujq\documents\github\wlang\parser.hpp
+	"common.h"
+

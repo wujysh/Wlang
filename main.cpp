@@ -5,6 +5,8 @@ extern NProgram* programBlock;
 extern int yyparse();
 extern FILE * yyin;
 
+void printAST();
+
 int main(int argc, char **argv) {
     if (argc > 1) {
         FILE *file = fopen(argv[1], "r");
@@ -18,6 +20,25 @@ int main(int argc, char **argv) {
     }
 
     yyparse();
-    std::cout << programBlock << std::endl;
+
+    printAST();
+
     return 0;
+}
+
+void printAST() {
+    cout << endl;
+    cout << "Program: " << programBlock << endl;
+    FunctionList::iterator funcIter;
+    FunctionList functions = programBlock->functions;
+    for (funcIter = functions.begin(); funcIter != functions.end(); funcIter++) {
+        cout << "|  |- Function: " << *funcIter << endl;
+
+        StatementList statements = (*funcIter)->block;
+        StatementList::iterator stmtIter;
+        for (stmtIter = statements.begin(); stmtIter != statements.end(); stmtIter++) {
+            cout << "|  |  |- Statement: " << *stmtIter << endl;
+        }
+    }
+    cout << endl;
 }
