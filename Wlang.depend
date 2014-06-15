@@ -10,12 +10,13 @@
 	<stdio.h>
 	<iostream>
 
-1402668337 c:\users\wujq\documents\github\wlang\common.h
+1402825957 c:\users\wujq\documents\github\wlang\common.h
 	<iostream>
 	<cstdlib>
 	<cstdio>
 	<vector>
 	<string>
+	"llvm/IR/Value.h"
 
 1402672664 source:c:\users\wujq\documents\github\wlang\tokens.cpp
 	<stdio.h>
@@ -30,7 +31,33 @@
 1402672660 c:\users\wujq\documents\github\wlang\parser.hpp
 	"common.h"
 
-1402765309 source:c:\users\wujq\documents\github\wlang\main.cpp
+1402821485 source:c:\users\wujq\documents\github\wlang\main.cpp
 	<iostream>
 	"common.h"
+	"codegen.h"
+
+1402821418 source:c:\users\wujq\documents\github\wlang\codegen.cpp
+	"codegen.h"
+	"parser.hpp"
+
+1402823930 c:\users\wujq\documents\github\wlang\codegen.h
+	<stack>
+	"llvm/IR/Module.h"
+	"llvm/IR/Function.h"
+	"llvm/IR/Type.h"
+	"llvm/IR/DerivedTypes.h"
+	"llvm/IR/LLVMContext.h"
+	"llvm/IR/PassManager.h"
+	"llvm/IR/Instructions.h"
+	"llvm/IR/CallingConv.h"
+	"llvm/Bitcode/ReaderWriter.h"
+	"llvm/Analysis/Verifier.h"
+	"llvm/Assembly/PrintModulePass.h"
+	"llvm/IR/IRBuilder.h"
+	"llvm/Support/TargetSelect.h"
+	"llvm/ExecutionEngine/GenericValue.h"
+	"llvm/ExecutionEngine/JIT.h"
+	"llvm/ExecutionEngine/Interpreter.h"
+	"llvm/Support/raw_ostream.h"
+	<typeinfo>
 

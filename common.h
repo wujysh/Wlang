@@ -3,9 +3,8 @@
 #include <cstdio>
 #include <vector>
 #include <string>
+#include "llvm/IR/Value.h"
 using namespace std;
-
-/*#include <llvm/Value.h>*/
 
 class CodeGenContext;
 class Node;
@@ -32,7 +31,7 @@ typedef vector<NIdentifier*> IdentifierList;
 class Node {
 public:
     virtual ~Node() {}
-    //virtual llvm::Value* codeGen(CodeGenContext& context) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context) { }
 };
 
 class NExpression : public Node {
@@ -45,14 +44,14 @@ class NInteger : public NExpression {
 public:
     long long value;
     NInteger(long long value) : value(value) { }
-    //virtual llvm::Value* codeGen(CodeGenContext& context);
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NFloat : public NExpression {
 public:
     double value;
     NFloat(double value) : value(value) { }
-    //virtual llvm::Value* codeGen(CodeGenContext& context);
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NString : public NExpression {
@@ -66,7 +65,7 @@ class NIdentifier : public NExpression {
 public:
     std::string name;
     NIdentifier(const std::string& name) : name(name) { }
-    //virtual llvm::Value* codeGen(CodeGenContext& context);
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NBinaryOperator : public NExpression {
@@ -76,7 +75,7 @@ public:
     NExpression& rhs;
     NBinaryOperator(NExpression& lhs, int op, NExpression& rhs) :
         lhs(lhs), rhs(rhs), op(op) { }
-    //virtual llvm::Value* codeGen(CodeGenContext& context);
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NAssignStatement : public NStatement {
@@ -85,7 +84,7 @@ public:
     NExpression& rhs;
     NAssignStatement(NIdentifier& lhs, NExpression& rhs) :
         lhs(lhs), rhs(rhs) { }
-    //virtual llvm::Value* codeGen(CodeGenContext& context);
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NDefStatement : public NStatement {
@@ -94,7 +93,7 @@ public:
     IdentifierList identifiers;
     NDefStatement(int type, IdentifierList& identifiers) :
         type(type), identifiers(identifiers) { }
-    //virtual llvm::Value* codeGen(CodeGenContext& context);
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NIfStatement : public NStatement {
@@ -106,7 +105,7 @@ public:
         condition(condition), thenblock(thenblock) {}
     NIfStatement(NExpression& condition, StatementList& thenblock, StatementList& elseblock) :
         condition(condition), thenblock(thenblock), elseblock(elseblock) {}
-    //virtual llvm::Value* codeGen(CodeGenContext& context);
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NWhileStatement : public NStatement {
@@ -115,20 +114,21 @@ public:
     StatementList block;
     NWhileStatement(NExpression& condition, StatementList& block) :
         condition(condition), block(block) {}
-    //virtual llvm::Value* codeGen(CodeGenContext& context);
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NInputStatement : public NStatement {
 public:
     IdentifierList identifiers;
     NInputStatement(IdentifierList& identifiers) : identifiers(identifiers) {}
-    //virtual llvm::Value* codeGen(CodeGenContext& context);
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NOutputStatement : public NStatement {
 public:
     ExpressionList expressions;
     NOutputStatement(ExpressionList& expressions) : expressions(expressions) {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NFunctionStatement : public NStatement {
@@ -137,12 +137,12 @@ public:
     StatementList block;
     NFunctionStatement(const NIdentifier& id, StatementList& block) :
         id(id), block(block) { }
-    //virtual llvm::Value* codeGen(CodeGenContext& context);
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NProgram : public NStatement {
 public:
     FunctionList functions;
     NProgram(FunctionList& functions) : functions(functions) {}
-    //virtual llvm::Value* codeGen(CodeGenContext& context);
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };

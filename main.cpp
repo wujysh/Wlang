@@ -1,6 +1,6 @@
 #include <iostream>
 #include "common.h"
-#include <typeinfo>
+#include "codegen.h"
 
 extern NProgram* programBlock;
 extern int yyparse();
@@ -23,6 +23,10 @@ int main(int argc, char **argv) {
     yyparse();
 
     printAST();
+
+    CodeGenContext context;
+    context.generateCode(*programBlock);
+    context.runCode();
 
     return 0;
 }
