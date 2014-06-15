@@ -1,9 +1,10 @@
 #include <iostream>
 #include "common.h"
+#include <typeinfo>
 
 extern NProgram* programBlock;
 extern int yyparse();
-extern FILE * yyin;
+extern FILE* yyin;
 
 void printAST();
 
@@ -28,16 +29,28 @@ int main(int argc, char **argv) {
 
 void printAST() {
     cout << endl;
-    cout << "Program: " << programBlock << endl;
+    cout << "©° Program: " << programBlock << endl;
     FunctionList::iterator funcIter;
     FunctionList functions = programBlock->functions;
     for (funcIter = functions.begin(); funcIter != functions.end(); funcIter++) {
-        cout << "|  |- Function: " << *funcIter << endl;
+        NIdentifier identifier = (*funcIter)->id;
+        cout << "©¦ ©À Function: " << identifier.name << " " << *funcIter << endl;
 
         StatementList statements = (*funcIter)->block;
         StatementList::iterator stmtIter;
         for (stmtIter = statements.begin(); stmtIter != statements.end(); stmtIter++) {
-            cout << "|  |  |- Statement: " << *stmtIter << endl;
+            cout << "©¦ ©¦ ©À Statement: " << *stmtIter << " ";
+
+            //cout << "- DefStatement ";
+            cout << typeid(**stmtIter).name() << endl;
+//            NDefStatement defstatement = *((NDefStatement*)*stmtIter);
+//            IdentifierList identifiers = defstatement.identifiers;
+//            IdentifierList::iterator identIter;
+//            for (identIter = identifiers.begin(); identIter != identifiers.end(); identIter++) {
+//                identifier = **identIter;
+//                cout << identifier.name << " ";
+//            }
+//            cout << defstatement.type << endl;
         }
     }
     cout << endl;
