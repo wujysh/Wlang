@@ -1,3 +1,6 @@
+#ifndef AST_H_
+#define AST_H_
+
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
@@ -146,3 +149,5 @@ public:
     NProgram(FunctionList& functions) : functions(functions) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
+
+#endif // AST_H_

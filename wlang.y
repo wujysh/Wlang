@@ -7,7 +7,7 @@
 %}
 
 %code requires {
-   #include "common.h"
+   #include "ast.h"
 }
 
 /* Represents the many different ways we can access our data */

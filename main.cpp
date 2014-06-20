@@ -1,5 +1,5 @@
 #include <iostream>
-#include "common.h"
+#include "ast.h"
 #include "codegen.h"
 
 extern NProgram* programBlock;
