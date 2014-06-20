@@ -9,4 +9,7 @@ parser
 /lib
 *.cbp
 *.depend
+parser.cpp
+parser.hpp
+tokens.cpp
 

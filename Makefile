@@ -10,6 +10,9 @@ CPPFLAGS = `llvm-config --cppflags`
 LDFLAGS = `llvm-config --ldflags`
 LIBS = `llvm-config --libs`
 
+test:
+	parser test/wlang.w
+
 clean:
 	$(RM) -rf parser.cpp parser.hpp parser tokens.cpp $(OBJS)
 

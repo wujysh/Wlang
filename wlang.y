@@ -62,57 +62,57 @@
 
 %%
 
-program : functions { printf("program"); programBlock = new NProgram(*$1); }
+program : functions { programBlock = new NProgram(*$1); }
 	;
 
-functions : function { printf("functions"); $$ = new FunctionList(); $$->push_back($1); }
+functions : function { $$ = new FunctionList(); $$->push_back($1); }
           | functions function { $$->push_back($2); }
           ;
 
-function : KFUNCTION identifier TLEFTBRACKET TRIGHTBRACKET statementblock KEND KFUNCTION { printf("function"); $$ = new NFunctionStatement(*$2, *$5); }
+function : KFUNCTION identifier TLEFTBRACKET TRIGHTBRACKET statementblock KEND KFUNCTION { $$ = new NFunctionStatement(*$2, *$5); }
          ;
 
-statementblock : KBEGIN statements KEND { printf("block"); $$ = $2; }
+statementblock : KBEGIN statements KEND { $$ = $2; }
                ;
 
-statements : statement { printf("statements"); $$ = new StatementList(); $$->push_back($1); }
+statements : statement { $$ = new StatementList(); $$->push_back($1); }
            | statements statement { $$->push_back($2); }
            ;
 
 statement : ifstatement | assignstatement | whilestatement | inputstatement | outputstatement | defstatement
           ;
 
-defstatement : KDEF identifiers KAS datatype TSEMICOLON { printf("defstatement"); $$ = new NDefStatement($4, *$2); }
+defstatement : KDEF identifiers KAS datatype TSEMICOLON { $$ = new NDefStatement($4, *$2); }
              ;
 
-identifiers : identifier { printf("identifiers"); $$ = new IdentifierList(); $$->push_back($1); }
+identifiers : identifier { $$ = new IdentifierList(); $$->push_back($1); }
             | identifiers TCOMMA identifier { $1->push_back($3); }
             ;
 
-identifier : TIDENTIFIER { printf("identifier"); $$ = new NIdentifier(*$1); delete $1; }
+identifier : TIDENTIFIER { $$ = new NIdentifier(*$1); delete $1; }
            ;
 
 datatype : KINTEGER | KFLOAT | KSTRING
          ;
 
-inputstatement : KINPUT identifiers TSEMICOLON { printf("inputstatement"); $$ = new NInputStatement(*$2); }
+inputstatement : KINPUT identifiers TSEMICOLON { $$ = new NInputStatement(*$2); }
                ;
 
-outputstatement : KOUTPUT expressions TSEMICOLON { printf("outputstatement"); $$ = new NOutputStatement(*$2); }
+outputstatement : KOUTPUT expressions TSEMICOLON { $$ = new NOutputStatement(*$2); }
                 ;
 
-expressions : expression { printf("expressions"); $$ = new ExpressionList(); $$->push_back($1); }
+expressions : expression { $$ = new ExpressionList(); $$->push_back($1); }
             | expressions TCOMMA expression { $1->push_back($3); }
             ;
 
-assignstatement : identifier TASSIGN expression TSEMICOLON { printf("assignstatement"); $$ = new NAssignStatement(*$1, *$3); }
+assignstatement : identifier TASSIGN expression TSEMICOLON { $$ = new NAssignStatement(*$1, *$3); }
                 ;
 
-ifstatement : KIF boolexpression statementblock { printf("ifstatement"); $$ = new NIfStatement(*$2, *$3); }
+ifstatement : KIF boolexpression statementblock { $$ = new NIfStatement(*$2, *$3); }
             | KIF boolexpression statementblock KELSE statementblock { $$ = new NIfStatement(*$2, *$3, *$5); }
             ;
 
-whilestatement : KWHILE boolexpression KDO statementblock { printf("whilestatement"); $$ = new NWhileStatement(*$2, *$4); }
+whilestatement : KWHILE boolexpression KDO statementblock { $$ = new NWhileStatement(*$2, *$4); }
                ;
 
 expression : term { $$ = $1; }
