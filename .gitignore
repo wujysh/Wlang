@@ -1,5 +1,7 @@
 *.save
 *.*~
+parser
+*.o
 *.out
 /data
 /bin
