@@ -19,9 +19,11 @@
     class NProgram *program;
     class NBinaryOperator *binary_operator;
     class NIdentifier *identifier;
+    class NArgument *argument;
     class NInteger *ninteger;
     class NFloat *nfloat;
     vector<NStatement*> *statement_vector;
+    ArgumentList *argument_vector;
     FunctionList *function_vector;
     ExpressionList *expression_vector;
     IdentifierList *identifier_vector;
@@ -34,11 +36,11 @@
    they represent.
  */
 %token <nstring> TIDENTIFIER TINTEGER TFLOAT TSTRING
-%token <token> KIF KELSE KWHILE KDO KINTEGER KFLOAT KSTRING KINPUT KOUTPUT KFUNCTION KEND KDEF KAS KBEGIN
+%token <token> KVAR KIF KTHEN KELSE KWHILE KDO KINTEGER KFLOAT KSTRING KINPUT KOUTPUT KFUNCTION KEND KDEF KAS KBEGIN
 %token <token> KAND KOR
 %token <token> TPLUS TMINUS TMULTIPLY TDEVIDE TASSIGN
 %token <token> TLESS TLESSEQUAL TGREATER TGREATEREQUAL TNOTEQUAL TEQUAL
-%token <token> TLEFTBRACE TRIGHTBRACE TLEFTBRACKET TRIGHTBRACKET TSEMICOLON TCOMMA
+%token <token> TLEFTBRACE TRIGHTBRACE TLEFTBRACKET TRIGHTBRACKET TSEMICOLON TCOMMA TCOLON
 %token <token> TERROR
 
 /* Define the type of node our nonterminal symbols represent.
@@ -49,6 +51,7 @@
 //%type <expression> expression boolexpression
 %type <statement> statement defstatement ifstatement whilestatement inputstatement outputstatement assignstatement
 %type <function_statement> function
+%type <argument_vector> arguments
 %type <statement_vector> statementblock statements
 %type <function_vector> functions
 %type <expression_vector> expressions
@@ -57,22 +60,32 @@
 %type <binary_operator> expression boolexpression term factor boolterm boolfactor
 %type <program> program
 %type <identifier> identifier;
+%type <argument> argument;
 
 %start program
 
 %%
 
 program : functions { programBlock = new NProgram(*$1); }
-	;
+        ;
 
 functions : function { $$ = new FunctionList(); $$->push_back($1); }
           | functions function { $$->push_back($2); }
           ;
 
-function : KFUNCTION identifier TLEFTBRACKET TRIGHTBRACKET statementblock KEND KFUNCTION { $$ = new NFunctionStatement(*$2, *$5); }
+function : KDEF identifier TLEFTBRACKET arguments TRIGHTBRACKET TCOLON datatype statementblock KEND { $$ = new NFunctionStatement(*$2, *$4, $7, *$8); }
          ;
 
-statementblock : KBEGIN statements KEND { $$ = $2; }
+arguments : { $$ = new ArgumentList(); }
+          | argument { $$ = new ArgumentList(); $$->push_back($1); }
+          | arguments TCOMMA argument { $1->push_back($3); }
+          ;
+
+argument : TIDENTIFIER TCOLON datatype { $$ = new NArgument(*$1, $3); delete($1); }
+         ;
+
+statementblock : statements { $$ = $1; }
+               | KBEGIN statements { $$ = $2; }
                ;
 
 statements : statement { $$ = new StatementList(); $$->push_back($1); }
@@ -82,7 +95,8 @@ statements : statement { $$ = new StatementList(); $$->push_back($1); }
 statement : ifstatement | assignstatement | whilestatement | inputstatement | outputstatement | defstatement
           ;
 
-defstatement : KDEF identifiers KAS datatype TSEMICOLON { $$ = new NDefStatement($4, *$2); }
+defstatement : KVAR identifiers TCOLON datatype TSEMICOLON { $$ = new NDefStatement($4, *$2); }
+             | KVAR identifiers TCOLON datatype TASSIGN expression TSEMICOLON { $$ = new NDefStatement($4, *$2); /*$$ = new NAssignStatement(*$1, *$3); */ }
              ;
 
 identifiers : identifier { $$ = new IdentifierList(); $$->push_back($1); }
@@ -108,11 +122,11 @@ expressions : expression { $$ = new ExpressionList(); $$->push_back($1); }
 assignstatement : identifier TASSIGN expression TSEMICOLON { $$ = new NAssignStatement(*$1, *$3); }
                 ;
 
-ifstatement : KIF boolexpression statementblock { $$ = new NIfStatement(*$2, *$3); }
-            | KIF boolexpression statementblock KELSE statementblock { $$ = new NIfStatement(*$2, *$3, *$5); }
+ifstatement : KIF boolexpression KTHEN statementblock KEND { $$ = new NIfStatement(*$2, *$4); }
+            | KIF boolexpression KTHEN statementblock KELSE statementblock KEND { $$ = new NIfStatement(*$2, *$4, *$6); }
             ;
 
-whilestatement : KWHILE boolexpression KDO statementblock { $$ = new NWhileStatement(*$2, *$4); }
+whilestatement : KWHILE boolexpression KDO statementblock KEND { $$ = new NWhileStatement(*$2, *$4); }
                ;
 
 expression : term { $$ = $1; }

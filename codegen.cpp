@@ -47,7 +47,7 @@ static Type *typeOf(int type) {
     } else if (type == KFLOAT) {
         return Type::getDoubleTy(getGlobalContext());
     } else if (type == KSTRING) {
-        return Type::getLabelTy(getGlobalContext());
+        //return Type::getLabelTy(getGlobalContext());
     }
     return Type::getVoidTy(getGlobalContext());
 }
@@ -139,18 +139,22 @@ Value* NAssignStatement::codeGen(CodeGenContext& context) {
 
 Value* NIfStatement::codeGen(CodeGenContext& context) {
     std::cout << "Creating if statement " << std::endl;
+    return NULL;
 }
 
 Value* NWhileStatement::codeGen(CodeGenContext& context) {
     std::cout << "Creating while statement " << std::endl;
+    return NULL;
 }
 
 Value* NInputStatement::codeGen(CodeGenContext& context) {
     std::cout << "Creating input statement " << std::endl;
+    return NULL;
 }
 
 Value* NOutputStatement::codeGen(CodeGenContext& context) {
     std::cout << "Creating output statement " << std::endl;
+    return NULL;
 }
 
 Value* NFunctionStatement::codeGen(CodeGenContext& context) {

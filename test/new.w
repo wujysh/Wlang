@@ -1,5 +1,5 @@
-﻿def add(x: integer, y: integer): integer
-	x + y
+def add(x: integer, y: integer): integer
+	z = x + y;
 end
 
 def main(): integer
@@ -15,5 +15,7 @@ def main(): integer
 		end
 	end
 	output x, y, z, str;
-	output add(x + y) * z;
+	output (x+y) * z;
 end
+
+
