@@ -1,4 +1,4 @@
-all: parser
+﻿all: parser
 
 OBJS = parser.o  \
        codegen.o \

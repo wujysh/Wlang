@@ -1,4 +1,4 @@
-function add()
+﻿function add()
 begin
 	def x, y, z as integer;
 	z = x + y;

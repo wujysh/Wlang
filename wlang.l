@@ -1,4 +1,4 @@
-%{
+﻿%{
 #include <string>
 #include "parser.hpp"
 #define SAVE_TOKEN yylval.nstring = new std::string(yytext, yyleng)
