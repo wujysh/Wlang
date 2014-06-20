@@ -3,12 +3,15 @@
 #include "codegen.h"
 
 extern NProgram* programBlock;
-extern int yyparse();
+extern int yyparse(), yyleng, lineno, tokenpos;
 extern FILE* yyin;
-
+extern char linebuf[500];
+void yyerror(char const *);
 void printAST();
+char filename[500];
 
 int main(int argc, char **argv) {
+    strcpy(filename, argv[1]);
     if (argc > 1) {
         FILE *file = fopen(argv[1], "r");
         if (!file) {
@@ -20,6 +23,11 @@ int main(int argc, char **argv) {
         yyin = stdin;
     }
 
+    fgets(linebuf, 500, yyin);
+    if (linebuf[strlen(linebuf)-1] == '\n')
+        linebuf[strlen(linebuf)-1] = '\0';
+    rewind(yyin);
+
     yyparse();
 
     printAST();
@@ -29,6 +37,16 @@ int main(int argc, char **argv) {
     context.runCode();
 
     return 0;
+}
+
+void yyerror(char const *s) {
+    printf("%s:", filename);
+    printf("%d:%d: %s:\n%s\n", lineno, tokenpos-yyleng+1, s, linebuf);
+    printf("%*s", tokenpos-yyleng, "");
+    for (int i = 0; i < yyleng; i++) {
+      printf("%c", '^');
+    }
+    printf("\n");
 }
 
 void printAST() {

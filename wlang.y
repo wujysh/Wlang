@@ -1,11 +1,8 @@
 %{
    class NProgram;
    NProgram *programBlock; /* the top level root node of our final AST */
-   extern int yylex(), yyleng;
-   extern int lineno, tokenpos;
-   extern char linebuf[500];
-   void yyerror(char const *);
-
+   extern int yylex();
+   extern void yyerror(char const *);
 %}
 
 %code requires {
@@ -165,11 +162,3 @@ relation : TLESS | TLESSEQUAL | TGREATER | TGREATEREQUAL | TEQUAL | TNOTEQUAL
 %%
 #include <iostream>
 
-void yyerror(char const *s) {
-    printf("%d: %s:\n%s\n", lineno, s, linebuf);
-    printf("%*s", tokenpos-yyleng, "");
-    for (int i = 0; i < yyleng; i++) {
-      printf("%c", '^');
-    }
-    printf("\n");
-}
