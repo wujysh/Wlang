@@ -5,3 +5,6 @@
 /bin
 /obj
 /lib
+*.cbp
+*.depend
+
