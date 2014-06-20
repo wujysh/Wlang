@@ -1,5 +1,5 @@
-#include <iostream>
-#include "common.h"
+ï»¿#include <iostream>
+#include "ast.h"
 #include "codegen.h"
 
 extern NProgram* programBlock;
@@ -33,17 +33,17 @@ int main(int argc, char **argv) {
 
 void printAST() {
     cout << endl;
-    cout << "©° Program: " << programBlock << endl;
+    cout << "â”Œ Program: " << programBlock << endl;
     FunctionList::iterator funcIter;
     FunctionList functions = programBlock->functions;
     for (funcIter = functions.begin(); funcIter != functions.end(); funcIter++) {
         NIdentifier identifier = (*funcIter)->id;
-        cout << "©¦ ©À Function: " << identifier.name << " " << *funcIter << endl;
+        cout << "â”‚ â” Function: " << identifier.name << " " << *funcIter << endl;
 
         StatementList statements = (*funcIter)->block;
         StatementList::iterator stmtIter;
         for (stmtIter = statements.begin(); stmtIter != statements.end(); stmtIter++) {
-            cout << "©¦ ©¦ ©À Statement: " << *stmtIter << " ";
+            cout << "â”‚ â”‚ â” Statement: " << *stmtIter << " ";
 
             //cout << "- DefStatement ";
             cout << typeid(**stmtIter).name() << endl;

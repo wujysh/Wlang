@@ -1,7 +1,15 @@
 *.save
 *.*~
+parser
+*.o
 *.out
 /data
 /bin
 /obj
 /lib
+*.cbp
+*.depend
+parser.cpp
+parser.hpp
+tokens.cpp
+

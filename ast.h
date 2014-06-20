@@ -1,3 +1,6 @@
+﻿#ifndef AST_H_
+#define AST_H_
+
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
@@ -12,6 +15,7 @@ class NStatement;
 class NExpression;
 class NFunctionStatement;
 class NIdentifier;
+class NArgument;
 class NInteger;
 class NFloat;
 class NString;
@@ -27,6 +31,7 @@ typedef vector<NStatement*> StatementList;
 typedef vector<NFunctionStatement*> FunctionList;
 typedef vector<NExpression*> ExpressionList;
 typedef vector<NIdentifier*> IdentifierList;
+typedef vector<NArgument*> ArgumentList;
 
 class Node {
 public:
@@ -43,14 +48,14 @@ class NStatement : public Node {
 class NInteger : public NExpression {
 public:
     long long value;
-    NInteger(long long value) : value(value) { }
+    NInteger(long long value) : value(value) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NFloat : public NExpression {
 public:
     double value;
-    NFloat(double value) : value(value) { }
+    NFloat(double value) : value(value) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
@@ -64,8 +69,16 @@ public:
 class NIdentifier : public NExpression {
 public:
     std::string name;
-    NIdentifier(const std::string& name) : name(name) { }
+    NIdentifier(const std::string& name) : name(name) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class NArgument : public NExpression {
+public:
+    int type;
+    std::string name;
+    NArgument(const std::string& name, int type) : name(name), type(type) {}
+    //virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NBinaryOperator : public NExpression {
@@ -74,7 +87,7 @@ public:
     NExpression& lhs;
     NExpression& rhs;
     NBinaryOperator(NExpression& lhs, int op, NExpression& rhs) :
-        lhs(lhs), rhs(rhs), op(op) { }
+        lhs(lhs), rhs(rhs), op(op) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
@@ -134,9 +147,11 @@ public:
 class NFunctionStatement : public NStatement {
 public:
     const NIdentifier& id;
+    ArgumentList arguments;
+    int returnType;
     StatementList block;
-    NFunctionStatement(const NIdentifier& id, StatementList& block) :
-        id(id), block(block) { }
+    NFunctionStatement(const NIdentifier& id, ArgumentList& arguments, int returnType, StatementList& block) :
+        id(id), arguments(arguments), returnType(returnType), block(block) { }
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
@@ -146,3 +161,5 @@ public:
     NProgram(FunctionList& functions) : functions(functions) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
+
+#endif // AST_H_

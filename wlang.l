@@ -15,6 +15,7 @@ STRING   ([^\"\\]?(\\.)?(\\\n)?)*
 [ \n\t]                                 {}
 
 if                                      { printf("%s", yytext); return TOKEN(KIF); }
+then                                    { printf("%s", yytext); return TOKEN(KTHEN); }
 else                                    { printf("%s", yytext); return TOKEN(KELSE); }
 while                                   { printf("%s", yytext); return TOKEN(KWHILE); }
 do                                      { printf("%s", yytext); return TOKEN(KDO); }
@@ -23,14 +24,14 @@ float                                   { printf("%s", yytext); return TOKEN(KFL
 string                                  { printf("%s", yytext); return TOKEN(KSTRING); }
 input                                   { printf("%s", yytext); return TOKEN(KINPUT); }
 output                                  { printf("%s", yytext); return TOKEN(KOUTPUT); }
-function                                { printf("%s", yytext); return TOKEN(KFUNCTION); }
 end                                     { printf("%s", yytext); return TOKEN(KEND); }
 def                                     { printf("%s", yytext); return TOKEN(KDEF); }
+var                                     { printf("%s", yytext); return TOKEN(KVAR); }
 as                                      { printf("%s", yytext); return TOKEN(KAS); }
 begin                                   { printf("%s", yytext); return TOKEN(KBEGIN); }
 
-and                                     { printf("%s", yytext); return TOKEN(KAND); }
-or                                      { printf("%s", yytext); return TOKEN(KOR); }
+and|"&&"                                { printf("%s", yytext); return TOKEN(KAND); }
+or|"||"                                 { printf("%s", yytext); return TOKEN(KOR); }
 
 {ID}                                    { printf("%s", yytext); SAVE_TOKEN; return TIDENTIFIER; }
 
@@ -59,7 +60,7 @@ or                                      { printf("%s", yytext); return TOKEN(KOR
 ")"                                     { printf("%s", yytext); return TOKEN(TRIGHTBRACKET); }
 ";"                                     { printf("%s", yytext); return TOKEN(TSEMICOLON); }
 ","                                     { printf("%s", yytext); return TOKEN(TCOMMA); }
-
+":"                                     { printf("%s", yytext); return TOKEN(TCOLON); }
 .                                       { printf("Unknown token!\n"); yyterminate(); }
 
 %%
