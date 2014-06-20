@@ -73,6 +73,7 @@ functions : function { $$ = new FunctionList(); $$->push_back($1); }
           ;
 
 function : KDEF identifier TLEFTBRACKET arguments TRIGHTBRACKET TCOLON datatype statementblock KEND { $$ = new NFunctionStatement(*$2, *$4, $7, *$8); }
+         | KDEF identifier TLEFTBRACKET arguments TRIGHTBRACKET TCOLON datatype statementblock error KEND {}
          ;
 
 arguments : { $$ = new ArgumentList(); }
@@ -95,7 +96,9 @@ statement : ifstatement | assignstatement | whilestatement | inputstatement | ou
           ;
 
 defstatement : KVAR identifiers TCOLON datatype TSEMICOLON { $$ = new NDefStatement($4, *$2); }
+             | KVAR identifiers TCOLON datatype error TSEMICOLON {}
              | KVAR identifiers TCOLON datatype TASSIGN expression TSEMICOLON { $$ = new NDefStatement($4, *$2); /*$$ = new NAssignStatement(*$1, *$3); */ }
+             | KVAR identifiers TCOLON datatype TASSIGN expression error TSEMICOLON {}
              ;
 
 identifiers : identifier { $$ = new IdentifierList(); $$->push_back($1); }
@@ -109,9 +112,11 @@ datatype : KINTEGER | KFLOAT | KSTRING
          ;
 
 inputstatement : KINPUT identifiers TSEMICOLON { $$ = new NInputStatement(*$2); }
+               | KINPUT identifiers error TSEMICOLON {}
                ;
 
 outputstatement : KOUTPUT expressions TSEMICOLON { $$ = new NOutputStatement(*$2); }
+                | KOUTPUT expressions error TSEMICOLON {}
                 ;
 
 expressions : expression { $$ = new ExpressionList(); $$->push_back($1); }
@@ -119,13 +124,18 @@ expressions : expression { $$ = new ExpressionList(); $$->push_back($1); }
             ;
 
 assignstatement : identifier TASSIGN expression TSEMICOLON { $$ = new NAssignStatement(*$1, *$3); }
+                | identifier TASSIGN expression error TSEMICOLON {}
                 ;
 
 ifstatement : KIF boolexpression KTHEN statementblock KEND { $$ = new NIfStatement(*$2, *$4); }
+            | KIF boolexpression error KTHEN statementblock KEND {}
+            | KIF boolexpression KTHEN statementblock error KEND {}
+            | KIF boolexpression KTHEN statementblock error KELSE statementblock KEND {}
             | KIF boolexpression KTHEN statementblock KELSE statementblock KEND { $$ = new NIfStatement(*$2, *$4, *$6); }
             ;
 
 whilestatement : KWHILE boolexpression KDO statementblock KEND { $$ = new NWhileStatement(*$2, *$4); }
+               | KWHILE boolexpression KDO statementblock error KEND {}
                ;
 
 expression : term { $$ = $1; }
