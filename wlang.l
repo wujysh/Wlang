@@ -4,64 +4,72 @@
 #define SAVE_TOKEN yylval.nstring = new std::string(yytext, yyleng)
 #define TOKEN(t) (yylval.token = t)
 extern "C" int yywrap() {}
+int lineno = 1, tokenpos = 0;
+char linebuf[500];
 %}
 
 DIGIT    [0-9]
 ID       [_a-zA-Z][_a-zA-Z0-9]*
 STRING   ([^\"\\]?(\\.)?(\\\n)?)*
-%option yylineno
 
 %%
-[ \n\t]                                 {}
 
-if                                      { printf("%s", yytext); return TOKEN(KIF); }
-then                                    { printf("%s", yytext); return TOKEN(KTHEN); }
-else                                    { printf("%s", yytext); return TOKEN(KELSE); }
-while                                   { printf("%s", yytext); return TOKEN(KWHILE); }
-do                                      { printf("%s", yytext); return TOKEN(KDO); }
-integer                                 { printf("%s", yytext); return TOKEN(KINTEGER); }
-float                                   { printf("%s", yytext); return TOKEN(KFLOAT); }
-string                                  { printf("%s", yytext); return TOKEN(KSTRING); }
-input                                   { printf("%s", yytext); return TOKEN(KINPUT); }
-output                                  { printf("%s", yytext); return TOKEN(KOUTPUT); }
-end                                     { printf("%s", yytext); return TOKEN(KEND); }
-def                                     { printf("%s", yytext); return TOKEN(KDEF); }
-var                                     { printf("%s", yytext); return TOKEN(KVAR); }
-as                                      { printf("%s", yytext); return TOKEN(KAS); }
-begin                                   { printf("%s", yytext); return TOKEN(KBEGIN); }
+\n.*    { strcpy(linebuf, yytext+1);
+          lineno++;
+          tokenpos = 0;
+          yyless(1);  
+        }
+[\t]    { tokenpos += 8; }
+[ ]     { tokenpos += 1; }
 
-and|"&&"                                { printf("%s", yytext); return TOKEN(KAND); }
-or|"||"                                 { printf("%s", yytext); return TOKEN(KOR); }
+if                                      { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KIF); }
+then                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KTHEN); }
+else                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KELSE); }
+while                                   { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KWHILE); }
+do                                      { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KDO); }
+integer                                 { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KINTEGER); }
+float                                   { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KFLOAT); }
+string                                  { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KSTRING); }
+input                                   { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KINPUT); }
+output                                  { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KOUTPUT); }
+end                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KEND); }
+def                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KDEF); }
+var                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KVAR); }
+as                                      { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KAS); }
+begin                                   { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KBEGIN); }
 
-{ID}                                    { printf("%s", yytext); SAVE_TOKEN; return TIDENTIFIER; }
+and|"&&"                                { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KAND); }
+or|"||"                                 { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KOR); }
 
-{DIGIT}+                                { printf("%s", yytext); SAVE_TOKEN; return TINTEGER; }
+{ID}                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ SAVE_TOKEN; return TIDENTIFIER; }
 
-{DIGIT}+"."{DIGIT}*                     { printf("%s", yytext); SAVE_TOKEN; return TFLOAT; }
+{DIGIT}+                                { tokenpos += yyleng; /*printf("%s", yytext);*/ SAVE_TOKEN; return TINTEGER; }
 
-"\""{STRING}"\""                        { printf("%s", yytext); SAVE_TOKEN; return TSTRING; }
+{DIGIT}+"."{DIGIT}*                     { tokenpos += yyleng; /*printf("%s", yytext);*/ SAVE_TOKEN; return TFLOAT; }
 
-"+"                                     { printf("%s", yytext); return TOKEN(TPLUS); }
-"-"                                     { printf("%s", yytext); return TOKEN(TMINUS); }
-"*"                                     { printf("%s", yytext); return TOKEN(TMULTIPLY); }
-"/"                                     { printf("%s", yytext); return TOKEN(TDEVIDE); }
-"="                                     { printf("%s", yytext); return TOKEN(TASSIGN); }
+"\""{STRING}"\""                        { tokenpos += yyleng; /*printf("%s", yytext);*/ SAVE_TOKEN; return TSTRING; }
 
-"<"                                     { printf("%s", yytext); return TOKEN(TLESS); }
-"<="                                    { printf("%s", yytext); return TOKEN(TLESSEQUAL); }
-">"                                     { printf("%s", yytext); return TOKEN(TGREATER); }
-">="                                    { printf("%s", yytext); return TOKEN(TGREATEREQUAL); }
-"<>"                                    { printf("%s", yytext); return TOKEN(TNOTEQUAL); }
-"=="                                    { printf("%s", yytext); return TOKEN(TEQUAL); }
+"+"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TPLUS); }
+"-"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TMINUS); }
+"*"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TMULTIPLY); }
+"/"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TDEVIDE); }
+"="                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TASSIGN); }
 
-"{"                                     { printf("%s", yytext); return TOKEN(TLEFTBRACE); }
-"}"                                     { printf("%s", yytext); return TOKEN(TRIGHTBRACE); }
-"("                                     { printf("%s", yytext); return TOKEN(TLEFTBRACKET); }
-")"                                     { printf("%s", yytext); return TOKEN(TRIGHTBRACKET); }
-";"                                     { printf("%s", yytext); return TOKEN(TSEMICOLON); }
-","                                     { printf("%s", yytext); return TOKEN(TCOMMA); }
-":"                                     { printf("%s", yytext); return TOKEN(TCOLON); }
-.                                       { printf("Unknown token!\n"); yyterminate(); }
+"<"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TLESS); }
+"<="                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TLESSEQUAL); }
+">"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TGREATER); }
+">="                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TGREATEREQUAL); }
+"<>"                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TNOTEQUAL); }
+"=="                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TEQUAL); }
+
+"{"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TLEFTBRACE); }
+"}"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TRIGHTBRACE); }
+"("                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TLEFTBRACKET); }
+")"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TRIGHTBRACKET); }
+";"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TSEMICOLON); }
+","                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TCOMMA); }
+":"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TCOLON); }
+.                                       { tokenpos += yyleng; printf("unknown character\n"); }
 
 %%
 /*
