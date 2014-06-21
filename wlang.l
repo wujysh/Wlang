@@ -1,12 +1,16 @@
 %{
-#include <string>
-#include "parser.hpp"
-#define SAVE_TOKEN yylval.nstring = new std::string(yytext, yyleng)
-#define TOKEN(t) (yylval.token = t)
-extern "C" int yywrap() {}
-extern void yyerror(char const *);
-int lineno = 1, tokenpos = 0;
-char linebuf[500];
+    #include <string>
+    #include "parser.hpp"
+
+    #define SAVE_TOKEN yylval.nstring = new std::string(yytext, yyleng)
+    #define TOKEN(t) (yylval.token = t)
+
+    extern "C" int yywrap() {}
+    extern void yyerror(char const *);
+    extern int yynerrs;
+
+    int lineno = 1, tokenpos = 0;
+    char linebuf[500];
 %}
 
 DIGIT    [0-9]
@@ -15,32 +19,32 @@ STRING   ([^\"\\]?(\\.)?(\\\n)?)*
 
 %%
 
-\n.*    { strcpy(linebuf, yytext+1);
-          lineno++;
-          tokenpos = 0;
-          yyless(1);  
-        }
-[\t]    { tokenpos += 8; }
-[ ]     { tokenpos += 1; }
+\n.*                                    { strcpy(linebuf, yytext+1);
+                                          lineno++;
+                                          tokenpos = 0;
+                                          yyless(1);  
+                                        }
+[\t]                                    { tokenpos += 8; }
+[ ]                                     { tokenpos += 1; }
 
-if                                      { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KIF); }
-then                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KTHEN); }
-else                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KELSE); }
-while                                   { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KWHILE); }
-do                                      { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KDO); }
-integer                                 { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KINTEGER); }
-float                                   { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KFLOAT); }
-string                                  { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KSTRING); }
-input                                   { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KINPUT); }
-output                                  { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KOUTPUT); }
-end                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KEND); }
-def                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KDEF); }
-var                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KVAR); }
-as                                      { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KAS); }
+if                                      { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(IF); }
+then                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(THEN); }
+else                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(ELSE); }
+while                                   { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(WHILE); }
+do                                      { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(DO); }
+integer                                 { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(INTEGER); }
+float                                   { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(FLOAT); }
+string                                  { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(STRING); }
+input                                   { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(INPUT); }
+output                                  { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(OUTPUT); }
+def                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(DEF); }
+var                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(VAR); }
+as                                      { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(AS); }
 begin                                   { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KBEGIN); }
+end                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KEND); }
 
-and|"&&"                                { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KAND); }
-or|"||"                                 { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KOR); }
+and|"&&"                                { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(AND); }
+or|"||"                                 { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(OR); }
 
 {ID}                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ SAVE_TOKEN; return TIDENTIFIER; }
 
@@ -71,22 +75,6 @@ or|"||"                                 { tokenpos += yyleng; /*printf("%s", yyt
 ","                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TCOMMA); }
 ":"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TCOLON); }
 
-.                                       { tokenpos += yyleng; yyerror("error: invalid character"); }
+.                                       { tokenpos += yyleng; yynerrs++; yyerror("lexical error: invalid character"); }
 
 %%
-/*
-int main(int argc, char** argv) {
-    if (argc > 1) {
-        FILE *file = fopen(argv[1], "r");
-        if (!file) {
-            fprintf(stderr, "could not open %s\n", argv[1]);
-            exit(1);
-        }
-        yyin = file;
-    } else {
-        yyin = stdin;
-    }
-    yylex();
-    return 0;
-}
-*/

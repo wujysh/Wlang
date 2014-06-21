@@ -5,7 +5,7 @@
    extern void yyerror(char const *);
 %}
 
-%error-verbose
+%define parse.error verbose
 
 %code requires {
    #include "ast.h"
@@ -36,13 +36,14 @@
    match our tokens.l lex file. We also define the node type
    they represent.
  */
-%token <nstring> TIDENTIFIER TINTEGER TFLOAT TSTRING
-%token <token> KVAR KIF KTHEN KELSE KWHILE KDO KINTEGER KFLOAT KSTRING KINPUT KOUTPUT KFUNCTION KEND KDEF KAS KBEGIN
-%token <token> KAND KOR
-%token <token> TPLUS TMINUS TMULTIPLY TDEVIDE TASSIGN
-%token <token> TLESS TLESSEQUAL TGREATER TGREATEREQUAL TNOTEQUAL TEQUAL
-%token <token> TLEFTBRACE TRIGHTBRACE TLEFTBRACKET TRIGHTBRACKET TSEMICOLON TCOMMA TCOLON
-%token <token> TERROR
+%token <nstring> TIDENTIFIER "IDENTIFIER" TINTEGER "INTEGER" TFLOAT "FLOAT" TSTRING "STRING"
+%token <token> VAR IF THEN ELSE WHILE DO INPUT OUTPUT FUNCTION DEF AS INTEGER FLOAT STRING
+%token <token> AND "&&" OR "||" KBEGIN "BEGIN" KEND "END"
+%token <token> TPLUS "+" TMINUS "-" TMULTIPLY "*" TDEVIDE "\\" TASSIGN "="
+%token <token> TLESS "<" TLESSEQUAL "<=" TGREATER ">" TGREATEREQUAL ">=" TNOTEQUAL "<>" TEQUAL "=="
+%token <token> TLEFTBRACE "{" TRIGHTBRACE "}" TLEFTBRACKET "(" TRIGHTBRACKET ")" 
+%token <token> TSEMICOLON ";" TCOMMA "," TCOLON ":"
+%token END 0 "end of file"
 
 /* Define the type of node our nonterminal symbols represent.
    The types refer to the %union declaration above. Ex: when
@@ -68,15 +69,16 @@
 %%
 
 program : functions { programBlock = new NProgram(*$1); }
+        | error END {}
         ;
 
 functions : function { $$ = new FunctionList(); $$->push_back($1); }
           | functions function { $$->push_back($2); }
           ;
 
-function : KDEF identifier TLEFTBRACKET arguments TRIGHTBRACKET TCOLON datatype statementblock KEND { $$ = new NFunctionStatement(*$2, *$4, $7, *$8); }
-         | KDEF identifier TLEFTBRACKET arguments error TRIGHTBRACKET TCOLON datatype statementblock KEND {}
-         | KDEF identifier TLEFTBRACKET arguments TRIGHTBRACKET TCOLON datatype statementblock error KEND { yyerrok; }
+function : DEF identifier TLEFTBRACKET arguments TRIGHTBRACKET TCOLON datatype statementblock KEND { $$ = new NFunctionStatement(*$2, *$4, $7, *$8); }
+         | DEF identifier TLEFTBRACKET arguments error TRIGHTBRACKET TCOLON datatype statementblock KEND {}
+         | error KEND {}
          ;
 
 arguments : { $$ = new ArgumentList(); }
@@ -96,12 +98,12 @@ statements : statement { $$ = new StatementList(); $$->push_back($1); }
            ;
 
 statement : ifstatement | assignstatement | whilestatement | inputstatement | outputstatement | defstatement
+          | error TSEMICOLON {}
+          | error KEND {}
           ;
 
-defstatement : KVAR identifiers TCOLON datatype TSEMICOLON { $$ = new NDefStatement($4, *$2); }
-             | KVAR identifiers TCOLON datatype error TSEMICOLON {}
-             | KVAR identifiers TCOLON datatype TASSIGN expression TSEMICOLON { $$ = new NDefStatement($4, *$2); /*$$ = new NAssignStatement(*$1, *$3); */ }
-             | KVAR identifiers TCOLON datatype TASSIGN error TSEMICOLON {}
+defstatement : VAR identifiers TCOLON datatype TSEMICOLON { $$ = new NDefStatement($4, *$2); }
+             | VAR identifiers TCOLON datatype TASSIGN expression TSEMICOLON { $$ = new NDefStatement($4, *$2); /*$$ = new NAssignStatement(*$1, *$3); */ }
              ;
 
 identifiers : identifier { $$ = new IdentifierList(); $$->push_back($1); }
@@ -111,15 +113,13 @@ identifiers : identifier { $$ = new IdentifierList(); $$->push_back($1); }
 identifier : TIDENTIFIER { $$ = new NIdentifier(*$1); delete $1; }
            ;
 
-datatype : KINTEGER | KFLOAT | KSTRING
+datatype : INTEGER | FLOAT | STRING
          ;
 
-inputstatement : KINPUT identifiers TSEMICOLON { $$ = new NInputStatement(*$2); }
-               | KINPUT identifiers error TSEMICOLON {}
+inputstatement : INPUT identifiers TSEMICOLON { $$ = new NInputStatement(*$2); }
                ;
 
-outputstatement : KOUTPUT expressions TSEMICOLON { $$ = new NOutputStatement(*$2); }
-                | KOUTPUT expressions error TSEMICOLON {}
+outputstatement : OUTPUT expressions TSEMICOLON { $$ = new NOutputStatement(*$2); }
                 ;
 
 expressions : expression { $$ = new ExpressionList(); $$->push_back($1); }
@@ -127,21 +127,17 @@ expressions : expression { $$ = new ExpressionList(); $$->push_back($1); }
             ;
 
 assignstatement : identifier TASSIGN expression TSEMICOLON { $$ = new NAssignStatement(*$1, *$3); }
-                | identifier TASSIGN expression error TSEMICOLON {}
                 ;
 
-ifstatement : KIF boolexpression KTHEN statementblock KEND { $$ = new NIfStatement(*$2, *$4); }
-            | KIF boolexpression error KTHEN statementblock KEND {}
-            | KIF boolexpression KTHEN statementblock error KEND {}
-            | KIF boolexpression KTHEN statementblock KELSE statementblock KEND { $$ = new NIfStatement(*$2, *$4, *$6); }
-            | KIF boolexpression error KTHEN statementblock KELSE statementblock KEND {}
-            | KIF boolexpression KTHEN statementblock error KELSE statementblock KEND {}
-            | KIF boolexpression KTHEN statementblock KELSE statementblock error KEND {}
+ifstatement : IF boolexpression THEN statementblock KEND { $$ = new NIfStatement(*$2, *$4); }
+            | IF boolexpression error THEN statementblock KEND {}
+            | IF boolexpression THEN statementblock ELSE statementblock KEND { $$ = new NIfStatement(*$2, *$4, *$6); }
+            | IF boolexpression error THEN statementblock ELSE statementblock KEND {}
+            | IF boolexpression THEN statementblock error ELSE statementblock KEND {}
             ;
 
-whilestatement : KWHILE boolexpression KDO statementblock KEND { $$ = new NWhileStatement(*$2, *$4); }
-               | KWHILE boolexpression error KDO statementblock KEND {}
-               | KWHILE boolexpression KDO statementblock error KEND {}
+whilestatement : WHILE boolexpression DO statementblock KEND { $$ = new NWhileStatement(*$2, *$4); }
+               | WHILE boolexpression error DO statementblock KEND {}
                ;
 
 expression : term { $$ = $1; }
@@ -161,11 +157,11 @@ factor : identifier { $<identifier>$ = $1; }
        ;
 
 boolexpression : boolterm { $$ = $1; }
-               | boolexpression KOR boolterm { $$ = new NBinaryOperator(*$1, $2, *$3); }
+               | boolexpression OR boolterm { $$ = new NBinaryOperator(*$1, $2, *$3); }
                ;
 
 boolterm : boolfactor { $$ = $1; }
-         | boolterm KAND boolfactor { $$ = new NBinaryOperator(*$1, $2, *$3); }
+         | boolterm AND boolfactor { $$ = new NBinaryOperator(*$1, $2, *$3); }
          ;
 
 boolfactor : expression relation expression { $$ = new NBinaryOperator(*$1, $2, *$3); }
