@@ -41,7 +41,7 @@
 %token <nstring> TIDENTIFIER "IDENTIFIER" TINTEGER "INTEGER" TFLOAT "FLOAT" TSTRING "STRING"
 %token <token> VAR IF THEN ELSE WHILE DO INPUT OUTPUT FUNCTION DEF AS INTEGER FLOAT STRING
 %token <token> AND "&&" OR "||" KBEGIN "BEGIN" KEND "END"
-%token <token> TPLUS "+" TMINUS "-" TMULTIPLY "*" TDEVIDE "\\" TASSIGN "="
+%token <token> TPLUS "+" TMINUS "-" TMULTIPLY "*" TDEVIDE "/" TASSIGN "="
 %token <token> TLESS "<" TLESSEQUAL "<=" TGREATER ">" TGREATEREQUAL ">=" TNOTEQUAL "<>" TEQUAL "=="
 %token <token> TLEFTBRACE "{" TRIGHTBRACE "}" TLEFTBRACKET "(" TRIGHTBRACKET ")" 
 %token <token> TSEMICOLON ";" TCOMMA "," TCOLON ":"
@@ -83,7 +83,7 @@ function : DEF identifier TLEFTBRACKET arguments TRIGHTBRACKET TCOLON datatype s
          | error KEND {}
          ;
 
-arguments : { $$ = new ArgumentList(); }
+arguments : %empty { $$ = new ArgumentList(); }
           | argument { $$ = new ArgumentList(); $$->push_back($1); }
           | arguments TCOMMA argument { $1->push_back($3); }
           ;
@@ -91,7 +91,8 @@ arguments : { $$ = new ArgumentList(); }
 argument : TIDENTIFIER TCOLON datatype { $$ = new NArgument(*$1, $3); delete($1); }
          ;
 
-statementblock : statements { $$ = $1; }
+statementblock : %empty { $$ = new StatementList(); }
+               | statements { $$ = $1; }
                | KBEGIN statements { $$ = $2; }
                ;
 
@@ -135,7 +136,6 @@ ifstatement : IF boolexpression THEN statementblock KEND { $$ = new NIfStatement
             | IF boolexpression error THEN statementblock KEND {}
             | IF boolexpression THEN statementblock ELSE statementblock KEND { $$ = new NIfStatement(*$2, *$4, *$6); }
             | IF boolexpression error THEN statementblock ELSE statementblock KEND {}
-            | IF boolexpression THEN statementblock error ELSE statementblock KEND {}
             ;
 
 whilestatement : WHILE boolexpression DO statementblock KEND { $$ = new NWhileStatement(*$2, *$4); }
@@ -174,5 +174,3 @@ relation : TLESS | TLESSEQUAL | TGREATER | TGREATEREQUAL | TEQUAL | TNOTEQUAL
          ;
 
 %%
-#include <iostream>
-

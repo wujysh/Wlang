@@ -4,14 +4,17 @@ OBJS = parser.o  \
        codegen.o \
        main.o    \
        tokens.o  \
-#       corefn.o  \
 
 CPPFLAGS = `llvm-config --cppflags`
 LDFLAGS = `llvm-config --ldflags`
 LIBS = `llvm-config --libs`
 
+.PHONY : test test_correct clean
 test:
-	parser test/wlang.w
+	./parser test/new.w
+
+test_correct:
+	./parser test/correct_new.w
 
 clean:
 	$(RM) -rf parser.cpp parser.hpp parser tokens.cpp $(OBJS)
@@ -26,7 +29,6 @@ tokens.cpp: wlang.l parser.hpp
 
 %.o: %.cpp
 	c++ -c $(CPPFLAGS) -o $@ $<
-
 
 parser: $(OBJS)
 	c++ -o $@ $(OBJS) $(LIBS) $(LDFLAGS)

@@ -2,6 +2,10 @@ def add(x: integer, y: integer): integer
 	z = x + y;
 end
 
+def empty(): float
+
+end
+
 def main(): integer
 	var x: integer = 0;
 	var y, z: float;
