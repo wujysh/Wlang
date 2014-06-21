@@ -127,14 +127,19 @@ math:
 }
 
 Value* NAssignStatement::codeGen(CodeGenContext& context) {
-    std::cout << "Creating assignment for " << lhs.name << std::endl;
+    std::cout << "Creating assignment for " << identifier.name << std::endl;
 
-    if(context.locals().find(lhs.name) == context.locals().end()) {
-        std::cerr << "undeclared variable " << lhs.name << std::endl;
+    if (context.locals().find(identifier.name) == context.locals().end()) {
+        std::cerr << "undeclared variable " << identifier.name << std::endl;
         return NULL;
     }
 
-    return new StoreInst(rhs.codeGen(context), context.locals()[lhs.name], false, context.currentBlock());
+    return new StoreInst(value.codeGen(context), context.locals()[identifier.name], false, context.currentBlock());
+}
+
+Value* NArgument::codeGen(CodeGenContext& context) {
+    std::cout << "Creating argument " << name << std::endl;
+    return NULL;
 }
 
 Value* NIfStatement::codeGen(CodeGenContext& context) {
@@ -159,8 +164,8 @@ Value* NOutputStatement::codeGen(CodeGenContext& context) {
 
 Value* NFunctionStatement::codeGen(CodeGenContext& context)
 {
-    //vector<const Type*> argTypes;
-    FunctionType *ftype = FunctionType::get(typeOf(0), false);
+    ArrayRef<llvm::Type *> argTypes;
+    FunctionType *ftype = FunctionType::get(typeOf(returnType), argTypes, false);
     Function *function = Function::Create(ftype, GlobalValue::InternalLinkage, id.name.c_str(), context.module);
     BasicBlock *bblock = BasicBlock::Create(getGlobalContext(), "entry", function, 0);
 

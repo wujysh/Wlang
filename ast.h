@@ -78,7 +78,7 @@ public:
     int type;
     std::string name;
     NArgument(const std::string& name, int type) : name(name), type(type) {}
-    //virtual llvm::Value* codeGen(CodeGenContext& context);
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NBinaryOperator : public NExpression {
@@ -93,10 +93,10 @@ public:
 
 class NAssignStatement : public NStatement {
 public:
-    NIdentifier& lhs;
-    NExpression& rhs;
-    NAssignStatement(NIdentifier& lhs, NExpression& rhs) :
-        lhs(lhs), rhs(rhs) { }
+    NIdentifier& identifier;
+    NExpression& value;
+    NAssignStatement(NIdentifier& identifier, NExpression& value) :
+        identifier(identifier), value(value) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
@@ -104,8 +104,11 @@ class NDefStatement : public NStatement {
 public:
     int type;
     IdentifierList identifiers;
+    const NExpression& value;
     NDefStatement(int type, IdentifierList& identifiers) :
-        type(type), identifiers(identifiers) { }
+        type(type), identifiers(identifiers), value(NExpression()) {}
+    NDefStatement(int type, IdentifierList& identifiers, NExpression& value) :
+        type(type), identifiers(identifiers), value(value) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
