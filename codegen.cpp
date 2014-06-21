@@ -8,17 +8,17 @@ void CodeGenContext::generateCode(NProgram& root) {
     std::cout << "Generating code...\n";
 
     /* Create the top level interpreter function to call as entry */
-    //vector<const Type*> argTypes;
-    //FunctionType *ftype = FunctionType::get(Type::getVoidTy(getGlobalContext()), argTypes, false);
+    ArrayRef<llvm::Type *> argTypes;
+    FunctionType *ftype = FunctionType::get(Type::getVoidTy(getGlobalContext()), argTypes, false);
     //FunctionType *ftype = FunctionType::get(Type::getVoidTy(getGlobalContext()), false);
-    //mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, "main", module);
-    //BasicBlock *bblock = BasicBlock::Create(getGlobalContext(), "entry", mainFunction, 0);
+    mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, "main", module);
+    BasicBlock *bblock = BasicBlock::Create(getGlobalContext(), "entry", mainFunction, 0);
 
     /* Push a new variable/block context */
-    //pushBlock(bblock);
+    pushBlock(bblock);
     root.codeGen(*this); /* emit bytecode for the toplevel block */
-    //ReturnInst::Create(getGlobalContext(), bblock);
-    //popBlock();
+    ReturnInst::Create(getGlobalContext(), bblock);
+    popBlock();
 
     /* Print the bytecode in a human-readable format
        to see if our program compiled properly
@@ -157,7 +157,8 @@ Value* NOutputStatement::codeGen(CodeGenContext& context) {
     return NULL;
 }
 
-Value* NFunctionStatement::codeGen(CodeGenContext& context) {
+Value* NFunctionStatement::codeGen(CodeGenContext& context)
+{
     //vector<const Type*> argTypes;
     FunctionType *ftype = FunctionType::get(typeOf(0), false);
     Function *function = Function::Create(ftype, GlobalValue::InternalLinkage, id.name.c_str(), context.module);
@@ -167,8 +168,8 @@ Value* NFunctionStatement::codeGen(CodeGenContext& context) {
 
     StatementList::const_iterator it;
     Value *last = NULL;
-    for(it = block.begin(); it != block.end(); it++) {
-        std::cout << "Generating code for " << typeid(**it).name() << std::endl;
+    for (it = block.begin(); it != block.end(); it++) {
+        std::cout << "Generating code for " << typeid(**it).name() << ' ' << std::endl;
         last = (**it).codeGen(context);
     }
 
@@ -179,7 +180,8 @@ Value* NFunctionStatement::codeGen(CodeGenContext& context) {
     return last;
 }
 
-Value* NDefStatement::codeGen(CodeGenContext& context) {
+Value* NDefStatement::codeGen(CodeGenContext& context)
+{
     std::cout << "Creating variable declaration " << type << " ";
     IdentifierList::iterator it;
     AllocaInst *alloc;
@@ -192,7 +194,8 @@ Value* NDefStatement::codeGen(CodeGenContext& context) {
     return alloc;
 }
 
-Value* NProgram::codeGen(CodeGenContext& context) {
+Value* NProgram::codeGen(CodeGenContext& context)
+{
     FunctionList::iterator it;
     Value *last = NULL;
     for (it = functions.begin(); it != functions.end(); it++) {
