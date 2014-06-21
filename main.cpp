@@ -3,45 +3,58 @@
 #include "codegen.h"
 
 extern NProgram* programBlock;
-extern int yyparse(), yyleng, lineno, tokenpos;
+extern int yyparse(), yyleng, lineno, tokenpos, yynerrs;
 extern FILE* yyin;
 extern char linebuf[500];
+void terminateCompile();
 void yyerror(char const *);
 void printAST();
 char filename[500];
 
 int main(int argc, char **argv) {
-    strcpy(filename, argv[1]);
     if (argc > 1) {
+        // open the file
+        strcpy(filename, argv[1]);
         FILE *file = fopen(argv[1], "r");
         if (!file) {
-            fprintf(stderr, "could not open %s\n", argv[1]);
+            fprintf(stderr, "wlang: fatal error: %s: No such file or directory\n", argv[1]);
             exit(1);
         }
         yyin = file;
+
     } else {
+        // use standard input
+        strcpy(filename, "wlang");
         yyin = stdin;
     }
 
+    // buffer the first line
     fgets(linebuf, 500, yyin);
     if (linebuf[strlen(linebuf)-1] == '\n')
         linebuf[strlen(linebuf)-1] = '\0';
     rewind(yyin);
 
-    yyparse();
+    if (yyparse() == 1 || yynerrs > 0) {
+        terminateCompile();
+    } else {
+        printAST();
 
-    printAST();
-
-    CodeGenContext context;
-    context.generateCode(*programBlock);
-    context.runCode();
+        CodeGenContext context;
+        context.generateCode(*programBlock);
+        context.runCode();
+    }
 
     return 0;
 }
 
+void terminateCompile() {
+    fprintf(stderr, "%d error generated.\n", yynerrs);
+    fprintf(stderr, "compilation terminated.\n");
+    exit(1);
+}
+
 void yyerror(char const *s) {
-    printf("%s:", filename);
-    printf("%d:%d: %s:\n%s\n", lineno, tokenpos-yyleng+1, s, linebuf);
+    printf("%s:%d:%d: %s:\n%s\n", filename, lineno, tokenpos-yyleng+1, s, linebuf);
     printf("%*s", tokenpos-yyleng, "");
     for (int i = 0; i < yyleng; i++) {
       printf("%c", '^');

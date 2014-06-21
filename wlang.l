@@ -4,6 +4,7 @@
 #define SAVE_TOKEN yylval.nstring = new std::string(yytext, yyleng)
 #define TOKEN(t) (yylval.token = t)
 extern "C" int yywrap() {}
+extern void yyerror(char const *);
 int lineno = 1, tokenpos = 0;
 char linebuf[500];
 %}
@@ -69,7 +70,8 @@ or|"||"                                 { tokenpos += yyleng; /*printf("%s", yyt
 ";"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TSEMICOLON); }
 ","                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TCOMMA); }
 ":"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TCOLON); }
-.                                       { tokenpos += yyleng; printf("unknown character\n"); }
+
+.                                       { tokenpos += yyleng; yyerror("error: invalid character"); }
 
 %%
 /*
