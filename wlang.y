@@ -23,6 +23,8 @@
     class NArgument *argument;
     class NInteger *ninteger;
     class NFloat *nfloat;
+    class NInputStatement *input_statement;
+    class NDefStatement *def_statement;
     vector<NStatement*> *statement_vector;
     ArgumentList *argument_vector;
     FunctionList *function_vector;
