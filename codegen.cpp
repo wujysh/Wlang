@@ -42,11 +42,11 @@ GenericValue CodeGenContext::runCode() {
 
 /* Returns an LLVM type based on the identifier */
 static Type *typeOf(int type) {
-    if (type == KINTEGER) {
+    if (type == INTEGER) {
         return Type::getInt64Ty(getGlobalContext());
-    } else if (type == KFLOAT) {
+    } else if (type == FLOAT) {
         return Type::getDoubleTy(getGlobalContext());
-    } else if (type == KSTRING) {
+    } else if (type == STRING) {
         //return Type::getLabelTy(getGlobalContext());
     }
     return Type::getVoidTy(getGlobalContext());
@@ -112,10 +112,10 @@ Value* NBinaryOperator::codeGen(CodeGenContext& context) {
     case TNOTEQUAL:
 
         goto math;
-    case KAND:
+    case AND:
         instr = Instruction::And;
         goto math;
-    case KOR:
+    case OR:
         instr = Instruction::Or;
         goto math;
         /* TODO comparison */
