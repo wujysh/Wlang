@@ -302,20 +302,33 @@ Value* NReturnStatement::codeGen(CodeGenContext& context) {
     std::cout << "Creating return statement " << std::endl;
     if (value == nullptr) {
         return ReturnInst::Create(getGlobalContext(), context.currentBlock());
-
     } else {
         return ReturnInst::Create(getGlobalContext(), value->codeGen(context), context.currentBlock());
     }
 }
 
 Value* NMethodCall::codeGen(CodeGenContext& context) {
-    std::cout << "Creating method call " << std::endl;
-    return NULL;
+    std::cout << "Creating method call " << id.name << std::endl;
+    Function *function = context.module->getFunction(id.name.c_str());
+    if (function == nullptr) {
+        std::cerr << "no such function " << id.name << std::endl;
+    }
+    std::vector<Value*> args;
+    for (ExpressionList::const_iterator it = arguments.begin();
+         it != arguments.end(); it++) {
+        args.push_back((**it).codeGen(context));
+    }
+    return CallInst::Create(function, args, "", context.currentBlock());
 }
 
 Value* NExprStatement::codeGen(CodeGenContext& context) {
     std::cout << "Creating expression statement " << std::endl;
-    return NULL;
+    Value *last = nullptr;
+    for (ExpressionList::const_iterator it = expressions.begin();
+         it != expressions.end(); it++) {
+        last = (**it).codeGen(context);
+    }
+    return last;
 }
 
 Value* NFunction::codeGen(CodeGenContext& context)
