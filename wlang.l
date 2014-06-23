@@ -48,9 +48,10 @@ or|"||"                                 { tokenpos += yyleng; /*printf("%s", yyt
 
 {ID}                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ SAVE_TOKEN; return TIDENTIFIER; }
 
-{DIGIT}+                                { tokenpos += yyleng; /*printf("%s", yytext);*/ SAVE_TOKEN; return TINTEGER; }
+(\+|\-)?{DIGIT}+                        { tokenpos += yyleng; /*printf("%s", yytext);*/ SAVE_TOKEN; return TINTEGER; }
 
-{DIGIT}+"."{DIGIT}*                     { tokenpos += yyleng; /*printf("%s", yytext);*/ SAVE_TOKEN; return TFLOAT; }
+(\+|\-)?({DIGIT}+|{DIGIT}+\.{DIGIT}*|{DIGIT}*\.{DIGIT}+)([eE][\+-]?{DIGIT}+)?  { 
+                                          tokenpos += yyleng; /*printf("%s", yytext);*/ SAVE_TOKEN; return TFLOAT; }
 
 "\""{STRING}"\""                        { tokenpos += yyleng; /*printf("%s", yytext);*/ SAVE_TOKEN; return TSTRING; }
 
