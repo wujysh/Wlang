@@ -5,7 +5,7 @@
 using namespace std;
 
 extern int yyparse();
-extern NBlock* programBlock;
+extern NProgram* programBlock;
 
 
 llvm::Function* createPrintfFunction(CodeGenContext& context)

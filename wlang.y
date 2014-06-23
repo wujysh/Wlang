@@ -43,7 +43,7 @@
 %token <nstring> TIDENTIFIER "IDENTIFIER" TINTEGER "INTEGER" TFLOAT "FLOAT" TSTRING "STRING"
 %token <token> VAR IF THEN ELSE WHILE DO INPUT OUTPUT FUNCTION DEF AS RETURN INTEGER FLOAT STRING
 %token <token> AND "&&" OR "||" KBEGIN "BEGIN" KEND "END"
-%token <token> TPLUS "+" TMINUS "-" TMULTIPLY "*" TDEVIDE "/" TASSIGN "="
+%token <token> TPLUS "+" TMINUS "-" TMULTIPLY "*" TDIVIDE "/" TASSIGN "="
 %token <token> TLESS "<" TLESSEQUAL "<=" TGREATER ">" TGREATEREQUAL ">=" TNOTEQUAL "<>" TEQUAL "=="
 %token <token> TLEFTBRACE "{" TRIGHTBRACE "}" TLEFTBRACKET "(" TRIGHTBRACKET ")" 
 %token <token> TSEMICOLON ";" TCOMMA "," TCOLON ":"
@@ -127,8 +127,9 @@ inputstatement : INPUT identifiers TSEMICOLON { $$ = new NInputStatement(*$2); }
 outputstatement : OUTPUT expressions TSEMICOLON { $$ = new NOutputStatement(*$2); }
                 ;
 
-returnstatement : RETURN TSEMICOLON
-                | RETURN expression
+returnstatement : RETURN TSEMICOLON { $$ = new NReturnStatement(); }
+                | RETURN expression TSEMICOLON { $$ = new NReturnStatement(*$2); }
+                ;
 
 expressions : expression { $$ = new ExpressionList(); $$->push_back($1); }
             | expressions TCOMMA expression { $1->push_back($3); }
@@ -154,7 +155,7 @@ expression : term { $$ = $1; }
 
 term : factor { $$ = $1; }
      | term TMULTIPLY factor { $$ = new NBinaryOperator(*$1, $2, *$3); }
-     | term TDEVIDE factor { $$ = new NBinaryOperator(*$1, $2, *$3); }
+     | term TDIVIDE factor { $$ = new NBinaryOperator(*$1, $2, *$3); }
      ;
 
 factor : identifier { $<identifier>$ = $1; }

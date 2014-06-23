@@ -151,11 +151,11 @@ public:
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
-class NReturnStatemnet : public NStatement {
+class NReturnStatement : public NStatement {
 public:
     const NExpression& value;
-    NReturnStatemnet() : {}
-    NReturnStatemnet(NExpression& value) : value(value) {}
+    NReturnStatement() : value(NExpression()){}
+    NReturnStatement(NExpression& value) : value(value) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 

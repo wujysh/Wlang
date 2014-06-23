@@ -123,7 +123,7 @@ Value* NBinaryOperator::codeGen(CodeGenContext& context) {
         if (autoUpgradeType(context, L, R))
             instr = Instruction::FMul;
         goto math;
-    case TDEVIDE: // TODO: Wrong name
+    case TDIVIDE:
         instr = Instruction::SDiv;
         if (autoUpgradeType(context, L, R))
             instr = Instruction::FDiv;

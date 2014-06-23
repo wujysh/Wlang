@@ -59,7 +59,7 @@ or|"||"                                 { tokenpos += yyleng; /*printf("%s", yyt
 "+"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TPLUS); }
 "-"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TMINUS); }
 "*"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TMULTIPLY); }
-"/"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TDEVIDE); }
+"/"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TDIVIDE); }
 "="                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TASSIGN); }
 
 "<"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TLESS); }
