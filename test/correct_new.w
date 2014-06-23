@@ -16,13 +16,14 @@ def main(): integer
 	input x, y, z, str;
 	add(1, 3), add(x, y);
 	output add(1, 2);
-	if x >= 0 then
+	if x >= 0 && x <= 100 || x <> y then
 		var z: integer;
-		z = z - 1;
-	else
-		while (add(x, y) < 100) do
-			empty();
+		if z == z then
+			var c: integer;
+		else
+			var d: integer;
 		end
+	else
 		var x: integer;
 	end
 	return x;
