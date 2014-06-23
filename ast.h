@@ -21,6 +21,8 @@ class NFloat;
 class NString;
 class NProgram;
 class NBinaryOperator;
+class NExprStatement;
+class NMethodCall;
 class NAssignStatement;
 class NIfStatement;
 class NWhileStatement;
@@ -28,7 +30,7 @@ class NInputStatement;
 class NOutputStatement;
 class NReturnStatemnet;
 
-typedef vector<NStatement*> StatementList;
+typedef vector<Node*> StatementList;
 typedef vector<NFunction*> FunctionList;
 typedef vector<NExpression*> ExpressionList;
 typedef vector<NIdentifier*> IdentifierList;
@@ -77,8 +79,8 @@ public:
 class NArgument : public NExpression {
 public:
     int type;
-    std::string name;
-    NArgument(const std::string& name, int type) : name(name), type(type) {}
+    NIdentifier& identifier;
+    NArgument(NIdentifier& identifier, int type) : identifier(identifier), type(type) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
@@ -92,6 +94,23 @@ public:
     virtual llvm::Value* codeGen(CodeGenContext& context);
     bool autoUpgradeType(CodeGenContext& context,
                          llvm::Value *lhs, llvm::Value *rhs);
+};
+
+class NMethodCall : public NExpression {
+public:
+    const NIdentifier& id;
+    ExpressionList arguments;
+    NMethodCall(const NIdentifier& id, ExpressionList& arguments) :
+        id(id), arguments(arguments) {}
+    NMethodCall(const NIdentifier& id) : id(id) {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class NExprStatement : public NStatement {
+public:
+    ExpressionList expressions;
+    NExprStatement(ExpressionList& expressions) : expressions(expressions) {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NAssignStatement : public NStatement {

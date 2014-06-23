@@ -23,11 +23,8 @@
     class NArgument *argument;
     class NInteger *ninteger;
     class NFloat *nfloat;
-    class NInputStatement *input_statement;
-    class NDefStatement *def_statement;
-    class NOutputStatement *output_statement;
-    class NReturnStatement *return_statement;
-    vector<NStatement*> *statement_vector;
+    class NMethodCall *method_call;
+    StatementList *statement_vector;
     ArgumentList *argument_vector;
     FunctionList *function_vector;
     ExpressionList *expression_vector;
@@ -55,7 +52,7 @@
    calling an (NIdentifier*). It makes the compiler happy.
  */
 //%type <expression> expression boolexpression
-%type <statement> statement defstatement ifstatement whilestatement inputstatement outputstatement assignstatement returnstatement
+%type <statement> statement defstatement ifstatement whilestatement inputstatement outputstatement assignstatement returnstatement exprstatement
 %type <function> function
 %type <argument_vector> arguments
 %type <statement_vector> statementblock statements
@@ -64,6 +61,7 @@
 %type <identifier_vector> identifiers
 %type <token> datatype relation
 %type <binary_operator> expression boolexpression term factor boolterm boolfactor
+%type <method_call> methodcall
 %type <program> program
 %type <identifier> identifier;
 %type <argument> argument;
@@ -90,7 +88,7 @@ arguments : %empty { $$ = new ArgumentList(); }
           | arguments TCOMMA argument { $1->push_back($3); }
           ;
 
-argument : TIDENTIFIER TCOLON datatype { $$ = new NArgument(*$1, $3); delete($1); }
+argument : identifier TCOLON datatype { $$ = new NArgument(*$1, $3); }
          ;
 
 statementblock : %empty { $$ = new StatementList(); }
@@ -102,10 +100,13 @@ statements : statement { $$ = new StatementList(); $$->push_back($1); }
            | statements statement { $$->push_back($2); }
            ;
 
-statement : ifstatement | assignstatement | whilestatement | inputstatement | outputstatement | defstatement | returnstatement
+statement : ifstatement | assignstatement | whilestatement | inputstatement | outputstatement | defstatement | returnstatement | exprstatement
           | error TSEMICOLON {}
           | error KEND {}
           ;
+
+exprstatement : expressions TSEMICOLON { $$ = new NExprStatement(*$1); }
+              ;
 
 defstatement : VAR identifiers TCOLON datatype TSEMICOLON { $$ = new NDefStatement($4, *$2); }
              | VAR identifiers TCOLON datatype TASSIGN expression TSEMICOLON { $$ = new NDefStatement($4, *$2, *$6); }
@@ -161,8 +162,13 @@ term : factor { $$ = $1; }
 factor : identifier { $<identifier>$ = $1; }
        | TINTEGER { $<ninteger>$ = new NInteger(atol($1->c_str())); delete $1; }
        | TFLOAT { $<nfloat>$ = new NFloat(atof($1->c_str())); delete $1; }
+       | methodcall { $<method_call>$ = $1; }
        | TLEFTBRACKET expression TRIGHTBRACKET { $$ = $2; }
        ;
+
+methodcall : identifier TLEFTBRACKET expressions TRIGHTBRACKET { $$ = new NMethodCall(*$1, *$3); }
+           | identifier TLEFTBRACKET TRIGHTBRACKET { $$ = new NMethodCall(*$1); }
+           ;
 
 boolexpression : boolterm { $$ = $1; }
                | boolexpression OR boolterm { $$ = new NBinaryOperator(*$1, $2, *$3); }

@@ -216,7 +216,7 @@ Value* NAssignStatement::codeGen(CodeGenContext& context) {
 }
 
 Value* NArgument::codeGen(CodeGenContext& context) {
-    std::cout << "Creating argument " << name << std::endl;
+    std::cout << "Creating argument " << identifier.name << std::endl;
     return nullptr;
 }
 
@@ -300,6 +300,16 @@ Value* NOutputStatement::codeGen(CodeGenContext& context) {
 
 Value* NReturnStatement::codeGen(CodeGenContext& context) {
     std::cout << "Creating return statement " << std::endl;
+    return NULL;
+}
+
+Value* NMethodCall::codeGen(CodeGenContext& context) {
+    std::cout << "Creating method call " << std::endl;
+    return NULL;
+}
+
+Value* NExprStatement::codeGen(CodeGenContext& context) {
+    std::cout << "Creating expression statement " << std::endl;
     return NULL;
 }
 
