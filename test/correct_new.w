@@ -26,6 +26,9 @@ def main(): integer
 	else
 		var x: integer;
 	end
+	while x <= y do
+		output x, y;
+	end
 	return x;
 end
 

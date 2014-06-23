@@ -57,7 +57,7 @@ void terminateCompile() {
 }
 
 void yyerror(char const *s) {
-    printf("%s:%d:%d: %s:\n%s\n", filename, lineno, tokenpos-yyleng+1, s, linebuf);
+    printf("%s:%d:%d: %s\n%s\n", filename, lineno, tokenpos-yyleng+1, s, linebuf);
     printf("%*s", tokenpos-yyleng, "");
     for (int i = 0; i < yyleng; i++) {
       printf("%c", '^');
@@ -107,6 +107,19 @@ void printAST() {
                 }
 
                 //cout << &thenblock << " " << &elseblock << endl;
+            }
+
+            if (typeid(**stmtIter).name() == typeid(NWhileStatement).name()) {
+                NWhileStatement whilestatement = *((NWhileStatement*)*stmtIter);
+                StatementList block = whilestatement.block;
+                StatementList::iterator stmtIter_while;
+
+                for (stmtIter_while = block.begin(); stmtIter_while != block.end(); stmtIter_while++) {
+                    cout << "│ │ │ ┝ Statement: " << *stmtIter_while << " ";
+                    cout << typeid(**stmtIter_while).name() << endl;
+                }
+
+                //cout << &block << endl;
             }
         }
     }

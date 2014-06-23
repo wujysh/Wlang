@@ -321,7 +321,7 @@ Value* NFunction::codeGen(CodeGenContext& context)
         argTypes.push_back(typeOf((**it).type));
     }
     /* Create the top level interpreter function to call as entry */
-    FunctionType *ftype = FunctionType::get(typeOf(returnType), false);
+    FunctionType *ftype = FunctionType::get(typeOf(returnType), argTypes, false);
     auto name = id.name;
     Function *function = Function::Create(ftype, GlobalValue::InternalLinkage, name.c_str(), context.module);
 
