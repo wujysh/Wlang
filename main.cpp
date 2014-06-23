@@ -6,6 +6,8 @@ extern NProgram* programBlock;
 extern int yyparse(), yyleng, lineno, tokenpos, yynerrs;
 extern FILE* yyin;
 extern char linebuf[500];
+extern void createCoreFunctions(CodeGenContext& context);
+
 void terminateCompile();
 void yyerror(char const *);
 void printAST();
@@ -40,6 +42,7 @@ int main(int argc, char **argv) {
         printAST();
 
         CodeGenContext context;
+        //createCoreFunctions(context);
         context.generateCode(*programBlock);
         context.runCode();
     }
