@@ -162,7 +162,7 @@ Value* NOutputStatement::codeGen(CodeGenContext& context) {
     return NULL;
 }
 
-Value* NFunctionStatement::codeGen(CodeGenContext& context)
+Value* NFunction::codeGen(CodeGenContext& context)
 {
     ArrayRef<llvm::Type *> argTypes;
     FunctionType *ftype = FunctionType::get(typeOf(returnType), argTypes, false);

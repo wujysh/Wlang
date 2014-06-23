@@ -13,7 +13,7 @@ class CodeGenContext;
 class Node;
 class NStatement;
 class NExpression;
-class NFunctionStatement;
+class NFunction;
 class NIdentifier;
 class NArgument;
 class NInteger;
@@ -28,7 +28,7 @@ class NInputStatement;
 class NOutputStatement;
 
 typedef vector<NStatement*> StatementList;
-typedef vector<NFunctionStatement*> FunctionList;
+typedef vector<NFunction*> FunctionList;
 typedef vector<NExpression*> ExpressionList;
 typedef vector<NIdentifier*> IdentifierList;
 typedef vector<NArgument*> ArgumentList;
@@ -147,13 +147,13 @@ public:
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
-class NFunctionStatement : public NStatement {
+class NFunction : public NStatement {
 public:
     const NIdentifier& id;
     ArgumentList arguments;
     int returnType;
     StatementList block;
-    NFunctionStatement(const NIdentifier& id, ArgumentList& arguments, int returnType, StatementList& block) :
+    NFunction(const NIdentifier& id, ArgumentList& arguments, int returnType, StatementList& block) :
         id(id), arguments(arguments), returnType(returnType), block(block) { }
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
