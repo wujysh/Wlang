@@ -90,6 +90,8 @@ public:
     NBinaryOperator(NExpression& lhs, int op, NExpression& rhs) :
         lhs(lhs), rhs(rhs), op(op) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
+    bool autoUpgradeType(CodeGenContext& context,
+                         llvm::Value *lhs, llvm::Value *rhs);
 };
 
 class NAssignStatement : public NStatement {
@@ -115,21 +117,22 @@ public:
 
 class NIfStatement : public NStatement {
 public:
-    NExpression& condition;
+    NBinaryOperator& condition;
     StatementList thenblock;
     StatementList elseblock;
-    NIfStatement(NExpression& condition, StatementList& thenblock) :
+    NIfStatement(NBinaryOperator& condition, StatementList& thenblock) :
         condition(condition), thenblock(thenblock) {}
-    NIfStatement(NExpression& condition, StatementList& thenblock, StatementList& elseblock) :
+    NIfStatement(NBinaryOperator& condition, StatementList& thenblock, StatementList& elseblock) :
         condition(condition), thenblock(thenblock), elseblock(elseblock) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
+    virtual llvm::Value* conditionCodeGen(CodeGenContext& context, StatementList& block);
 };
 
 class NWhileStatement : public NStatement {
 public:
-    NExpression& condition;
+    NBinaryOperator& condition;
     StatementList block;
-    NWhileStatement(NExpression& condition, StatementList& block) :
+    NWhileStatement(NBinaryOperator& condition, StatementList& block) :
         condition(condition), block(block) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
