@@ -133,7 +133,9 @@ returnstatement : RETURN TSEMICOLON { $$ = new NReturnStatement(); }
                 ;
 
 expressions : expression { $$ = new ExpressionList(); $$->push_back($1); }
+            | boolexpression { $$ = new ExpressionList(); $$->push_back($1); }
             | expressions TCOMMA expression { $1->push_back($3); }
+            | expressions TCOMMA boolexpression { $1->push_back($3); }
             ;
 
 assignstatement : identifier TASSIGN expression TSEMICOLON { $$ = new NAssignStatement(*$1, *$3); }

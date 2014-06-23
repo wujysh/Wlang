@@ -19,12 +19,12 @@ def main(): integer
 	if x >= 0 && add(x, y) <= 100 || x <> y then
 		empty();
 		if z == z then
-			var c: integer;
+			y = y + z;
 		else
-			var d: integer;
+			z = add(x, y);
 		end
 	else
-		var x: integer;
+		x > 0;
 	end
 	while x <= y do
 		output x, y;

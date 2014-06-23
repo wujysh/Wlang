@@ -23,12 +23,12 @@ void CodeGenContext::generateCode(NProgram& root) {
 /* Executes the AST by running the main function */
 GenericValue CodeGenContext::runCode() {
     std::cout << "Running code...\n";
-//	ExistingModuleProvider *mp = new ExistingModuleProvider(module);
-//	ExecutionEngine *ee = ExecutionEngine::create(mp, false);
-//	vector<GenericValue> noargs;
-//	GenericValue v = ee->runFunction(mainFunction, noargs);
+	//ExistingModuleProvider *mp = new ExistingModuleProvider(module);
+	//ExecutionEngine *ee = ExecutionEngine::create(module, false);
+	//vector<GenericValue> noargs;
+	//GenericValue v = ee->runFunction(mainFunction, noargs);
     std::cout << "Code was run.\n";
-//	return v;
+	//return v;
 }
 
 /* Returns an LLVM type based on the identifier */
@@ -285,7 +285,63 @@ Value* NIfStatement::conditionCodeGen(CodeGenContext& context, StatementList& bl
 
 Value* NWhileStatement::codeGen(CodeGenContext& context) {
     std::cout << "Creating while statement " << std::endl;
-    return nullptr;
+
+    // Value *condValue = condition.codeGen(context);
+    // if (condValue == nullptr) return nullptr;
+
+    // //std::cout << condValue->getType()->getTypeID() << std::endl;
+    // condValue = new FCmpInst(*context.currentBlock(), CmpInst::FCMP_ONE,
+    //                          condValue, ConstantFP::get(getGlobalContext(), APFloat(0.0)));
+    // Function *function = context.currentBlock()->getParent();
+
+    // BasicBlock *loopBlock = BasicBlock::Create(getGlobalContext(), "while.loop", function);
+    // BasicBlock *mergeBlock = BasicBlock::Create(getGlobalContext(), "while.cont");
+
+    // BranchInst::Create(thenBlock, elseBlock, condValue, context.currentBlock());
+
+
+    // // create then block
+    // context.pushBlock(thenBlock);
+
+    // Value *thenValue = conditionCodeGen(context, thenblock);
+    // if (thenValue == nullptr) return nullptr;
+    // BranchInst::Create(mergeBlock, context.currentBlock());
+
+    // context.popBlock();
+
+    // // create else block
+    // function->getBasicBlockList().push_back(elseBlock);
+    // context.pushBlock(elseBlock);
+
+    // Value *elseValue = conditionCodeGen(context, elseblock);
+    // if (elseValue == nullptr) return nullptr;
+    // BranchInst::Create(mergeBlock, context.currentBlock());
+
+    // context.popBlock();
+
+    // // create PHI node
+    // function->getBasicBlockList().push_back(mergeBlock);
+    // context.pushBlock(mergeBlock);
+
+    // PHINode *PN = PHINode::Create(Type::getVoidTy(getGlobalContext()), 2, "if.tmp", mergeBlock);
+    // PN->addIncoming(thenValue, thenBlock);
+    // PN->addIncoming(elseValue, elseBlock);
+
+    // context.popBlock();
+
+    // return PN;
+}
+
+Value* NWhileStatement::conditionCodeGen(CodeGenContext& context, StatementList& block)
+{
+    std::cout << "Generate conditional block" << std::endl;
+    StatementList::const_iterator it;
+    Value *last = nullptr;
+    for (it = block.begin(); it != block.end(); it++) {
+        std::cout << "Generating code for " << typeid(**it).name() << ' ' << std::endl;
+        last = (**it).codeGen(context);
+    }
+    return last;
 }
 
 Value* NInputStatement::codeGen(CodeGenContext& context) {

@@ -154,6 +154,7 @@ public:
     NWhileStatement(NBinaryOperator& condition, StatementList& block) :
         condition(condition), block(block) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
+    virtual llvm::Value* conditionCodeGen(CodeGenContext& context, StatementList& block);
 };
 
 class NInputStatement : public NStatement {
