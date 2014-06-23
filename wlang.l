@@ -40,6 +40,7 @@ output                                  { tokenpos += yyleng; /*printf("%s", yyt
 def                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(DEF); }
 var                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(VAR); }
 as                                      { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(AS); }
+return                                  { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(RETURN); }
 begin                                   { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KBEGIN); }
 end                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KEND); }
 

@@ -162,6 +162,11 @@ Value* NOutputStatement::codeGen(CodeGenContext& context) {
     return NULL;
 }
 
+Value* NReturnStatement::codeGen(CodeGenContext& context) {
+    std::cout << "Creating return statement " << std::endl;
+    return NULL;
+}
+
 Value* NFunction::codeGen(CodeGenContext& context)
 {
     ArrayRef<llvm::Type *> argTypes;

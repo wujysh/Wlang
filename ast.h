@@ -26,6 +26,7 @@ class NIfStatement;
 class NWhileStatement;
 class NInputStatement;
 class NOutputStatement;
+class NReturnStatemnet;
 
 typedef vector<NStatement*> StatementList;
 typedef vector<NFunction*> FunctionList;
@@ -144,6 +145,14 @@ class NOutputStatement : public NStatement {
 public:
     ExpressionList expressions;
     NOutputStatement(ExpressionList& expressions) : expressions(expressions) {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class NReturnStatemnet : public NStatement {
+public:
+    const NExpression& value;
+    NReturnStatemnet() : {}
+    NReturnStatemnet(NExpression& value) : value(value) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 

@@ -25,6 +25,8 @@
     class NFloat *nfloat;
     class NInputStatement *input_statement;
     class NDefStatement *def_statement;
+    class NOutputStatement *output_statement;
+    class NReturnStatement *return_statement;
     vector<NStatement*> *statement_vector;
     ArgumentList *argument_vector;
     FunctionList *function_vector;
@@ -39,7 +41,7 @@
    they represent.
  */
 %token <nstring> TIDENTIFIER "IDENTIFIER" TINTEGER "INTEGER" TFLOAT "FLOAT" TSTRING "STRING"
-%token <token> VAR IF THEN ELSE WHILE DO INPUT OUTPUT FUNCTION DEF AS INTEGER FLOAT STRING
+%token <token> VAR IF THEN ELSE WHILE DO INPUT OUTPUT FUNCTION DEF AS RETURN INTEGER FLOAT STRING
 %token <token> AND "&&" OR "||" KBEGIN "BEGIN" KEND "END"
 %token <token> TPLUS "+" TMINUS "-" TMULTIPLY "*" TDEVIDE "/" TASSIGN "="
 %token <token> TLESS "<" TLESSEQUAL "<=" TGREATER ">" TGREATEREQUAL ">=" TNOTEQUAL "<>" TEQUAL "=="
@@ -53,7 +55,7 @@
    calling an (NIdentifier*). It makes the compiler happy.
  */
 //%type <expression> expression boolexpression
-%type <statement> statement defstatement ifstatement whilestatement inputstatement outputstatement assignstatement
+%type <statement> statement defstatement ifstatement whilestatement inputstatement outputstatement assignstatement returnstatement
 %type <function> function
 %type <argument_vector> arguments
 %type <statement_vector> statementblock statements
@@ -100,7 +102,7 @@ statements : statement { $$ = new StatementList(); $$->push_back($1); }
            | statements statement { $$->push_back($2); }
            ;
 
-statement : ifstatement | assignstatement | whilestatement | inputstatement | outputstatement | defstatement
+statement : ifstatement | assignstatement | whilestatement | inputstatement | outputstatement | defstatement | returnstatement
           | error TSEMICOLON {}
           | error KEND {}
           ;
@@ -124,6 +126,9 @@ inputstatement : INPUT identifiers TSEMICOLON { $$ = new NInputStatement(*$2); }
 
 outputstatement : OUTPUT expressions TSEMICOLON { $$ = new NOutputStatement(*$2); }
                 ;
+
+returnstatement : RETURN TSEMICOLON
+                | RETURN expression
 
 expressions : expression { $$ = new ExpressionList(); $$->push_back($1); }
             | expressions TCOMMA expression { $1->push_back($3); }
