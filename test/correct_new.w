@@ -4,7 +4,7 @@ def add(x: integer, y: integer): integer
 end
 
 def empty(): float
-
+	
 end
 
 def main(): integer

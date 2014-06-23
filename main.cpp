@@ -81,14 +81,33 @@ void printAST() {
 
             //cout << "- DefStatement ";
             cout << typeid(**stmtIter).name() << endl;
-//            NDefStatement defstatement = *((NDefStatement*)*stmtIter);
-//            IdentifierList identifiers = defstatement.identifiers;
-//            IdentifierList::iterator identIter;
-//            for (identIter = identifiers.begin(); identIter != identifiers.end(); identIter++) {
-//                identifier = **identIter;
-//                cout << identifier.name << " ";
-//            }
-//            cout << defstatement.type << endl;
+
+            // if (typeid(**stmtIter).name() == typeid(NDefStatement).name()) {
+            //     NDefStatement defstatement = *((NDefStatement*)*stmtIter);
+            //     IdentifierList identifiers = defstatement.identifiers;
+            //     IdentifierList::iterator identIter;
+            //     for (identIter = identifiers.begin(); identIter != identifiers.end(); identIter++) {
+            //         identifier = **identIter;
+            //         cout << identifier.name << " ";
+            //     }
+            //     cout << defstatement.type << endl;
+            // }
+            if (typeid(**stmtIter).name() == typeid(NIfStatement).name()) {
+                NIfStatement ifstatement = *((NIfStatement*)*stmtIter);
+                StatementList thenblock = ifstatement.thenblock, elseblock = ifstatement.elseblock;
+                StatementList::iterator stmtIter_if;
+
+                for (stmtIter_if = thenblock.begin(); stmtIter_if != thenblock.end(); stmtIter_if++) {
+                    cout << "│ │ │ ┝ Then Statement: " << *stmtIter_if << " ";
+                    cout << typeid(**stmtIter_if).name() << endl;
+                }
+                for (stmtIter_if = elseblock.begin(); stmtIter_if != elseblock.end(); stmtIter_if++) {
+                    cout << "│ │ │ ┝ Else Statement: " << *stmtIter_if << " ";
+                    cout << typeid(**stmtIter_if).name() << endl;
+                }
+
+                //cout << &thenblock << " " << &elseblock << endl;
+            }
         }
     }
     cout << endl;

@@ -298,7 +298,7 @@ Value* NOutputStatement::codeGen(CodeGenContext& context) {
     return nullptr;
 }
 
-Value* NFunctionStatement::codeGen(CodeGenContext& context)
+Value* NFunction::codeGen(CodeGenContext& context)
 {
     vector<Type*> argTypes;
     for (ArgumentList::const_iterator it = arguments.begin();

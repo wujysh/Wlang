@@ -16,7 +16,7 @@
     class Node *node;
     class NExpression *expression;
     class NStatement *statement;
-    class NFunctionStatement *function_statement;
+    class NFunction *function;
     class NProgram *program;
     class NBinaryOperator *binary_operator;
     class NIdentifier *identifier;
@@ -54,7 +54,7 @@
  */
 //%type <expression> expression boolexpression
 %type <statement> statement defstatement ifstatement whilestatement inputstatement outputstatement assignstatement
-%type <function_statement> function
+%type <function> function
 %type <argument_vector> arguments
 %type <statement_vector> statementblock statements
 %type <function_vector> functions
@@ -78,7 +78,7 @@ functions : function { $$ = new FunctionList(); $$->push_back($1); }
           | functions function { $$->push_back($2); }
           ;
 
-function : DEF identifier TLEFTBRACKET arguments TRIGHTBRACKET TCOLON datatype statementblock KEND { $$ = new NFunctionStatement(*$2, *$4, $7, *$8); }
+function : DEF identifier TLEFTBRACKET arguments TRIGHTBRACKET TCOLON datatype statementblock KEND { $$ = new NFunction(*$2, *$4, $7, *$8); }
          | DEF identifier TLEFTBRACKET arguments error TRIGHTBRACKET TCOLON datatype statementblock KEND {}
          | error KEND {}
          ;
