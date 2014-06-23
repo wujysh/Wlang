@@ -1,5 +1,6 @@
 def add(x: integer, y: integer): integer
-	z = x + y;
+	var z: integer;
+	z = 1 + 1;
 end
 
 def empty(): float
@@ -8,18 +9,13 @@ end
 
 def main(): integer
 	var x: integer = 0;
-	var y, z: float;
-	var str: string;
+	var y, z: integer;
+	var str: float;
+	z = 5;
 	input x, y, z, str;
-	while (x < y and y <= 5.0) || y == z do
-		if x >= 2 && (y < z or x <> z) then
-			z = z - 1;
-		else
-			y = x;
-		end
+	if x >= 0 then
+		z = z - 1;
 	end
-	output x, y, z, str;
-	output (x+y), z;
 end
 
 

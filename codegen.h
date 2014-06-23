@@ -30,17 +30,16 @@ public:
 };
 
 class CodeGenContext {
-    std::stack<CodeGenBlock *> blocks;
-    Function *mainFunction;
-
 public:
+    std::vector<CodeGenBlock *> blocks;
+    Function *mainFunction;
     Module *module;
-    CodeGenContext() { module = new Module("main", getGlobalContext()); }
+    CodeGenContext(): module(new Module("main", getGlobalContext())) { }
 
     void generateCode(NProgram& root);
     GenericValue runCode();
-    std::map<std::string, Value*>& locals() { return blocks.top()->locals; }
-    BasicBlock *currentBlock() { return blocks.top()->block; }
-    void pushBlock(BasicBlock *block) { blocks.push(new CodeGenBlock()); blocks.top()->block = block; }
-    void popBlock() { CodeGenBlock *top = blocks.top(); blocks.pop(); delete top; }
+    std::map<std::string, Value*>& locals() { return blocks.back()->locals; }
+    BasicBlock *currentBlock() { return blocks.back()->block; }
+    void pushBlock(BasicBlock *block) { blocks.push_back(new CodeGenBlock()); blocks.back()->block = block; }
+    void popBlock() { CodeGenBlock *top = blocks.back(); blocks.pop_back(); if (top != nullptr) delete top; }
 };
