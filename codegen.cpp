@@ -65,9 +65,9 @@ Value* NIdentifier::codeGen(CodeGenContext& context) {
     std::cout << "Creating identifier reference: " << name << std::endl;
 
     bool found = false;
-    std::map<std::string, Value*>& locals = context.locals();
-    for (auto rit = context.blocks.rbegin(); rit != context.blocks.rend(); ++rit) { 
-        locals = context.locals();
+    std::map<std::string, Value*> locals;
+    for (auto rit = context.blocks.rbegin(); rit != context.blocks.rend(); ++rit) {
+        locals = (**rit).locals;
         if (locals.find(name) != locals.end()) {
             found = true;
             break;
@@ -199,9 +199,9 @@ Value* NAssignStatement::codeGen(CodeGenContext& context) {
     std::cout << "Creating assignment for " << identifier.name << std::endl;
 
     bool found = false;
-    std::map<std::string, Value*>& locals = context.locals();
+    std::map<std::string, Value*> locals;
     for (auto rit = context.blocks.rbegin(); rit != context.blocks.rend(); ++rit) {
-        locals = context.locals();
+        locals = (**rit).locals;
         if (locals.find(identifier.name) != locals.end()) {
             found = true;
             break;

@@ -17,7 +17,7 @@ def main(): integer
 	add(1, 3), add(x, y);
 	output add(1, 2);
 	if x >= 0 && x <= 100 || x <> y then
-		var z: integer;
+
 		if z == z then
 			var c: integer;
 		else
