@@ -192,7 +192,7 @@ relation:
     CmpInst *compareResult = CmpInst::Create(otherInstr, pred, L, R, "cmptmp", context.currentBlock());
     // Convert bool 0/1 to double 0.0 or 1.0
     return CastInst::Create(Instruction::UIToFP, compareResult,
-                            Type::getDoubleTy(getGlobalContext()), "booltmp");
+                            Type::getDoubleTy(getGlobalContext()), "booltmp", context.currentBlock());
 }
 
 Value* NAssignStatement::codeGen(CodeGenContext& context) {
@@ -227,7 +227,7 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     Value *condValue = condition.codeGen(context);
     if (condValue == nullptr) return nullptr;
 
-    std::cout << condValue->getType()->getTypeID() << std::endl;
+    //std::cout << condValue->getType()->getTypeID() << std::endl;
     condValue = new FCmpInst(*context.currentBlock(), CmpInst::FCMP_ONE,
                              condValue, ConstantFP::get(getGlobalContext(), APFloat(0.0)));
     Function *function = context.currentBlock()->getParent();
@@ -300,7 +300,12 @@ Value* NOutputStatement::codeGen(CodeGenContext& context) {
 
 Value* NReturnStatement::codeGen(CodeGenContext& context) {
     std::cout << "Creating return statement " << std::endl;
-    return NULL;
+    if (value == nullptr) {
+        return ReturnInst::Create(getGlobalContext(), context.currentBlock());
+
+    } else {
+        return ReturnInst::Create(getGlobalContext(), value->codeGen(context), context.currentBlock());
+    }
 }
 
 Value* NMethodCall::codeGen(CodeGenContext& context) {
@@ -345,8 +350,6 @@ Value* NFunction::codeGen(CodeGenContext& context)
         std::cout << "Generating code for " << typeid(**it).name() << ' ' << std::endl;
         last = (**it).codeGen(context);
     }
-
-    ReturnInst::Create(getGlobalContext(), bblock);
 
     context.popBlock();
 

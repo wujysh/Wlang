@@ -9,7 +9,7 @@ def empty(): float
 end
 
 def main(): integer
-	var x: integer = 0;
+	var x: integer;
 	var y, z: integer;
 	var str: float;
 	z = 5;

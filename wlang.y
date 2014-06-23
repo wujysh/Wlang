@@ -109,7 +109,7 @@ exprstatement : expressions TSEMICOLON { $$ = new NExprStatement(*$1); }
               ;
 
 defstatement : VAR identifiers TCOLON datatype TSEMICOLON { $$ = new NDefStatement($4, *$2); }
-             | VAR identifiers TCOLON datatype TASSIGN expression TSEMICOLON { $$ = new NDefStatement($4, *$2, *$6); }
+//             | VAR identifiers TCOLON datatype TASSIGN expression TSEMICOLON { $$ = new NDefStatement($4, *$2, *$6); }
              ;
 
 identifiers : identifier { $$ = new IdentifierList(); $$->push_back($1); }

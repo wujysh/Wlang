@@ -126,11 +126,11 @@ class NDefStatement : public NStatement {
 public:
     int type;
     IdentifierList identifiers;
-    const NExpression& value;
+    //const NExpression& value;
     NDefStatement(int type, IdentifierList& identifiers) :
-        type(type), identifiers(identifiers), value(NExpression()) {}
-    NDefStatement(int type, IdentifierList& identifiers, NExpression& value) :
-        type(type), identifiers(identifiers), value(value) {}
+        type(type), identifiers(identifiers) {}
+    //NDefStatement(int type, IdentifierList& identifiers, NExpression& value) :
+    //    type(type), identifiers(identifiers), value(value) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
@@ -172,9 +172,9 @@ public:
 
 class NReturnStatement : public NStatement {
 public:
-    const NExpression& value;
-    NReturnStatement() : value(NExpression()){}
-    NReturnStatement(NExpression& value) : value(value) {}
+    NExpression *value;
+    NReturnStatement() : value(nullptr) {}
+    NReturnStatement(NExpression& value) : value(&value) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
