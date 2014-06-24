@@ -1,10 +1,13 @@
+/*  
+ *	Wlang test file
+ */
 def add(x: integer y: integer): integer
 	z = x + y;
 end
 
-def empty() float
+def empty() /float
 
-en
+end
 
 def main(): integer
 	var x: integer1 = 0;

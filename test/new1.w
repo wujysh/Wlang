@@ -1,3 +1,6 @@
+/*  
+ *	Wlang test file
+ */
 def add(x: integer, y: integer): integer
 	var z: integer;
 	z = 1 + 1;

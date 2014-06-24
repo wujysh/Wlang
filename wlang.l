@@ -1,3 +1,4 @@
+%x COMMENT_BLOCK
 %{
     #include <string>
     #include <vector>
@@ -23,13 +24,23 @@ STRING   ([^\"\\]?(\\.)?(\\\n)?)*
 
 %%
 
+"//"[^\r\n]*                            { }  // line comment
+"/*"                                    { BEGIN(COMMENT_BLOCK); }  // block comment
+<COMMENT_BLOCK>"*/"                     { BEGIN(INITIAL); }
+<COMMENT_BLOCK>\n.*                     { buf.push_back(yytext+1);  // save the next line
+                                          yyline++;
+                                          yycolumn = 0;
+                                          yyless(1);
+                                        }
+<COMMENT_BLOCK>.                        { }
+
 \n.*                                    { buf.push_back(yytext+1);  // save the next line
                                           yyline++;
                                           yycolumn = 0;
                                           yyless(1);  
                                         }
 [\t]                                    { yycolumn += 7; }
-[ ]                                     {}
+[ ]                                     { }
 
 if                                      { return TOKEN(IF); }
 then                                    { return TOKEN(THEN); }
