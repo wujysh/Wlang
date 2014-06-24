@@ -265,10 +265,11 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     PHINode *PN = PHINode::Create(Type::getVoidTy(getGlobalContext()), 2, "if.tmp", mergeBlock);
     PN->addIncoming(thenValue, thenBlock);
     PN->addIncoming(elseValue, elseBlock);
+    ReturnInst::Create(getGlobalContext(), PN, mergeBlock);
 
     context.popBlock();
 
-    return PN;
+    return PN; 
 }
 
 Value* NIfStatement::conditionCodeGen(CodeGenContext& context, StatementList& block)
@@ -286,50 +287,48 @@ Value* NIfStatement::conditionCodeGen(CodeGenContext& context, StatementList& bl
 Value* NWhileStatement::codeGen(CodeGenContext& context) {
     std::cout << "Creating while statement " << std::endl;
 
-    // Value *condValue = condition.codeGen(context);
-    // if (condValue == nullptr) return nullptr;
+    Function *function = context.currentBlock()->getParent();
 
-    // //std::cout << condValue->getType()->getTypeID() << std::endl;
-    // condValue = new FCmpInst(*context.currentBlock(), CmpInst::FCMP_ONE,
-    //                          condValue, ConstantFP::get(getGlobalContext(), APFloat(0.0)));
-    // Function *function = context.currentBlock()->getParent();
+    BasicBlock *condBlock = BasicBlock::Create(getGlobalContext(), "while.cond", function);
+    BasicBlock *loopBlock = BasicBlock::Create(getGlobalContext(), "while.loop");
+    BasicBlock *afterBlock = BasicBlock::Create(getGlobalContext(), "while.after");
+    
+    // branch to condition block
+    BranchInst::Create(condBlock, context.currentBlock());
 
-    // BasicBlock *loopBlock = BasicBlock::Create(getGlobalContext(), "while.loop", function);
-    // BasicBlock *mergeBlock = BasicBlock::Create(getGlobalContext(), "while.cont");
+    // create cont block
+    context.pushBlock(condBlock);
 
-    // BranchInst::Create(thenBlock, elseBlock, condValue, context.currentBlock());
+    Value *condValue = condition.codeGen(context);
+    condValue = new FCmpInst(*context.currentBlock(), CmpInst::FCMP_ONE,
+                             condValue, ConstantFP::get(getGlobalContext(), APFloat(0.0)));
+    if (condValue == nullptr) return nullptr;
+    BranchInst::Create(loopBlock, afterBlock, condValue, context.currentBlock());
 
+    context.popBlock();
 
-    // // create then block
-    // context.pushBlock(thenBlock);
+    // create loop block
+    function->getBasicBlockList().push_back(loopBlock);
+    context.pushBlock(loopBlock);
 
-    // Value *thenValue = conditionCodeGen(context, thenblock);
-    // if (thenValue == nullptr) return nullptr;
-    // BranchInst::Create(mergeBlock, context.currentBlock());
+    Value *loopValue = conditionCodeGen(context, block);
+    if (loopValue == nullptr) return nullptr;
+    BranchInst::Create(condBlock, context.currentBlock());
 
-    // context.popBlock();
+    context.popBlock();
 
-    // // create else block
-    // function->getBasicBlockList().push_back(elseBlock);
-    // context.pushBlock(elseBlock);
+    // create PHI node
+    function->getBasicBlockList().push_back(afterBlock);
+    context.pushBlock(afterBlock);
 
-    // Value *elseValue = conditionCodeGen(context, elseblock);
-    // if (elseValue == nullptr) return nullptr;
-    // BranchInst::Create(mergeBlock, context.currentBlock());
+    PHINode *PN = PHINode::Create(Type::getVoidTy(getGlobalContext()), 2, "while.tmp", afterBlock);
+    PN->addIncoming(loopValue, loopBlock);
+    PN->addIncoming(condValue, condBlock);
+    ReturnInst::Create(getGlobalContext(), PN, afterBlock);
 
-    // context.popBlock();
+    context.popBlock();
 
-    // // create PHI node
-    // function->getBasicBlockList().push_back(mergeBlock);
-    // context.pushBlock(mergeBlock);
-
-    // PHINode *PN = PHINode::Create(Type::getVoidTy(getGlobalContext()), 2, "if.tmp", mergeBlock);
-    // PN->addIncoming(thenValue, thenBlock);
-    // PN->addIncoming(elseValue, elseBlock);
-
-    // context.popBlock();
-
-    // return PN;
+    return PN;
 }
 
 Value* NWhileStatement::conditionCodeGen(CodeGenContext& context, StatementList& block)
