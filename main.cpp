@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
         CodeGenContext context;
         //createCoreFunctions(context);
         context.generateCode(*programBlock);
-        context.runCode();
+        //context.runCode();
     }
 
     return 0;

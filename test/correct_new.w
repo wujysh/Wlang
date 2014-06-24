@@ -27,7 +27,7 @@ def main(): integer
 		x > 0;
 	end
 	while x <= y do
-		x, y;
+		x = x + 1;
 	end
 	x + 5, 5, x * y;
 	return x;
