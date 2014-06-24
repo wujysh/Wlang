@@ -80,7 +80,7 @@ Value* NIdentifier::codeGen(CodeGenContext& context) {
         }
     }
     if (!found) {
-        llvmerror("error: undeclared variable", line, column, length);
+        llvmerror("semantic error: undeclared variable", line, column, length);
         return nullptr;
     }
     return new LoadInst(locals[name], "", false, context.currentBlock());
@@ -191,7 +191,7 @@ Value* NBinaryOperator::codeGen(CodeGenContext& context) {
         instr = Instruction::Or;
         goto math;
     default:
-        llvmerror("error: invalid binary operator", line, column, length);
+        llvmerror("semantic error: invalid binary operator", line, column, length);
     }
     return nullptr;
 math:
@@ -216,7 +216,7 @@ Value* NAssignStatement::codeGen(CodeGenContext& context) {
         }
     }
     if (!found) {
-        llvmerror("error: undeclared variable", line, column, length);
+        llvmerror("semantic error: undeclared variable", line, column, length);
         return nullptr;
     }
 
@@ -392,7 +392,7 @@ Value* NMethodCall::codeGen(CodeGenContext& context) {
     std::cout << "Creating method call " << id.name << std::endl;
     Function *function = context.module->getFunction(id.name.c_str());
     if (function == nullptr) {
-        llvmerror("error: no such function", line, column, length);
+        llvmerror("semantic error: no such function", line, column, length);
         return nullptr;
     }
     std::vector<Value*> args;
@@ -459,7 +459,7 @@ Value* NDefStatement::codeGen(CodeGenContext& context)
     for (it = identifiers.begin(); it != identifiers.end(); it++) {
         std::cout << (*it)->name << " ";
         if (context.locals().find((*it)->name) != context.locals().end()) {
-            llvmerror("error: redefinition", line, column, length);
+            llvmerror("semantic error: redefinition", line, column, length);
             return nullptr;
         }
         alloc = new AllocaInst(typeOf(type), (*it)->name.c_str(), context.currentBlock());
@@ -486,7 +486,7 @@ void llvmerror(char const *s, int& line, int& column, int& length) {
     printf("%s:%d:%d: %s\n%s\n", filename, line, column-length+1, s, buf[line].c_str());
     printf("%*s", column-length, "");
     for (int i = 0; i < length; i++) {
-      printf("%c", '^');
+        printf("%c", '^');
     }
     printf("\n");
     yynerrs++;

@@ -10,9 +10,12 @@ CPPFLAGS = `llvm-config --cppflags` -std=c++11
 LDFLAGS = `llvm-config --ldflags`
 LIBS = `llvm-config --libs`
 
-.PHONY : test test_correct clean
+.PHONY : test test1 test_correct clean
 test:
 	./parser test/new.w
+
+test1:
+	./parser test/new1.w
 
 test_correct:
 	./parser test/correct_new.w

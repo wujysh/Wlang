@@ -9,12 +9,11 @@ def empty(): float
 end
 
 def main(): integer
-	var x: integer;
 	var y, z: integer;
-	var str: float;
+	var y: float;
 	z = 5;
 	input x, y, z, str;
-	add(1, 3), add(x, y);
+	add1(1, 3), add(x, y);
 	output add(1, 2);
 	if x >= 0 && add(x, y) <= 100 || x <> y then
 		empty();
