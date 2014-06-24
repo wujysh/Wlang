@@ -38,8 +38,12 @@ typedef vector<NArgument*> ArgumentList;
 
 class Node {
 public:
+    int line = 0, column = 0, length = 0;
+    void setLocation(int _line, int _column, int _length) {
+        line = _line;  column = _column;  length = _length;
+    }
     virtual ~Node() {}
-    virtual llvm::Value* codeGen(CodeGenContext& context) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context) {}
 };
 
 class NExpression : public Node {

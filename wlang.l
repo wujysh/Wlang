@@ -1,5 +1,6 @@
 %{
     #include <string>
+    #include <vector>
     #include "parser.hpp"
 
     #define SAVE_TOKEN yylval.nstring = new std::string(yytext, yyleng)
@@ -8,9 +9,12 @@
     extern "C" int yywrap() {}
     extern void yyerror(char const *);
     extern int yynerrs;
+    extern vector<string> buf;
 
-    int lineno = 1, tokenpos = 0;
-    char linebuf[500];
+    /* handle locations */
+    int yyline = 1, yycolumn = 0;
+    #define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yyline; yylloc.first_column = yycolumn+1; \
+                           yylloc.last_column = yycolumn+yyleng; yycolumn += yyleng;
 %}
 
 DIGIT    [0-9]
@@ -19,64 +23,63 @@ STRING   ([^\"\\]?(\\.)?(\\\n)?)*
 
 %%
 
-\n.*                                    { strcpy(linebuf, yytext+1);
-                                          lineno++;
-                                          tokenpos = 0;
+\n.*                                    { buf.push_back(yytext+1);  // save the next line
+                                          yyline++;
+                                          yycolumn = 0;
                                           yyless(1);  
                                         }
-[\t]                                    { tokenpos += 8; }
-[ ]                                     { tokenpos += 1; }
+[\t]                                    { yycolumn += 7; }
+[ ]                                     {}
 
-if                                      { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(IF); }
-then                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(THEN); }
-else                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(ELSE); }
-while                                   { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(WHILE); }
-do                                      { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(DO); }
-integer                                 { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(INTEGER); }
-float                                   { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(FLOAT); }
-string                                  { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(STRING); }
-input                                   { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(INPUT); }
-output                                  { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(OUTPUT); }
-def                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(DEF); }
-var                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(VAR); }
-as                                      { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(AS); }
-return                                  { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(RETURN); }
-begin                                   { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KBEGIN); }
-end                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(KEND); }
+if                                      { return TOKEN(IF); }
+then                                    { return TOKEN(THEN); }
+else                                    { return TOKEN(ELSE); }
+while                                   { return TOKEN(WHILE); }
+do                                      { return TOKEN(DO); }
+integer                                 { return TOKEN(INTEGER); }
+float                                   { return TOKEN(FLOAT); }
+string                                  { return TOKEN(STRING); }
+input                                   { return TOKEN(INPUT); }
+output                                  { return TOKEN(OUTPUT); }
+def                                     { return TOKEN(DEF); }
+var                                     { return TOKEN(VAR); }
+as                                      { return TOKEN(AS); }
+return                                  { return TOKEN(RETURN); }
+begin                                   { return TOKEN(KBEGIN); }
+end                                     { return TOKEN(KEND); }
 
-and|"&&"                                { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(AND); }
-or|"||"                                 { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(OR); }
+and|"&&"                                { return TOKEN(AND); }
+or|"||"                                 { return TOKEN(OR); }
 
-{ID}                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ SAVE_TOKEN; return TIDENTIFIER; }
+{ID}                                    { SAVE_TOKEN; return TIDENTIFIER; }
 
-(\+|\-)?{DIGIT}+                        { tokenpos += yyleng; /*printf("%s", yytext);*/ SAVE_TOKEN; return TINTEGER; }
+(\+|\-)?{DIGIT}+                        { SAVE_TOKEN; return TINTEGER; }
 
-(\+|\-)?({DIGIT}+|{DIGIT}+\.{DIGIT}*|{DIGIT}*\.{DIGIT}+)([eE][\+-]?{DIGIT}+)?  { 
-                                          tokenpos += yyleng; /*printf("%s", yytext);*/ SAVE_TOKEN; return TFLOAT; }
+(\+|\-)?({DIGIT}+|{DIGIT}+\.{DIGIT}*|{DIGIT}*\.{DIGIT}+)([eE][\+-]?{DIGIT}+)?  { SAVE_TOKEN; return TFLOAT; }
 
-"\""{STRING}"\""                        { tokenpos += yyleng; /*printf("%s", yytext);*/ SAVE_TOKEN; return TSTRING; }
+"\""{STRING}"\""                        { SAVE_TOKEN; return TSTRING; }
 
-"+"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TPLUS); }
-"-"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TMINUS); }
-"*"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TMULTIPLY); }
-"/"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TDIVIDE); }
-"="                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TASSIGN); }
+"+"                                     { return TOKEN(TPLUS); }
+"-"                                     { return TOKEN(TMINUS); }
+"*"                                     { return TOKEN(TMULTIPLY); }
+"/"                                     { return TOKEN(TDIVIDE); }
+"="                                     { return TOKEN(TASSIGN); }
 
-"<"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TLESS); }
-"<="                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TLESSEQUAL); }
-">"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TGREATER); }
-">="                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TGREATEREQUAL); }
-"<>"                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TNOTEQUAL); }
-"=="                                    { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TEQUAL); }
+"<"                                     { return TOKEN(TLESS); }
+"<="                                    { return TOKEN(TLESSEQUAL); }
+">"                                     { return TOKEN(TGREATER); }
+">="                                    { return TOKEN(TGREATEREQUAL); }
+"<>"                                    { return TOKEN(TNOTEQUAL); }
+"=="                                    { return TOKEN(TEQUAL); }
 
-"{"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TLEFTBRACE); }
-"}"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TRIGHTBRACE); }
-"("                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TLEFTBRACKET); }
-")"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TRIGHTBRACKET); }
-";"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TSEMICOLON); }
-","                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TCOMMA); }
-":"                                     { tokenpos += yyleng; /*printf("%s", yytext);*/ return TOKEN(TCOLON); }
+"{"                                     { return TOKEN(TLEFTBRACE); }
+"}"                                     { return TOKEN(TRIGHTBRACE); }
+"("                                     { return TOKEN(TLEFTBRACKET); }
+")"                                     { return TOKEN(TRIGHTBRACKET); }
+";"                                     { return TOKEN(TSEMICOLON); }
+","                                     { return TOKEN(TCOMMA); }
+":"                                     { return TOKEN(TCOLON); }
 
-.                                       { tokenpos += yyleng; yynerrs++; yyerror("lexical error: invalid character"); }
+.                                       { yynerrs++; yyerror("lexical error: invalid character"); }
 
 %%

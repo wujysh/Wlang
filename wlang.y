@@ -3,12 +3,15 @@
    NProgram *programBlock; /* the top level root node of our final AST */
    extern int yylex();
    extern void yyerror(char const *);
+   extern int yyleng;
 %}
 
 %define parse.error verbose
+%locations
 
 %code requires {
    #include "ast.h"
+   #define SETLOC() setLocation(yylloc.first_line, yylloc.first_column, yyleng)
 }
 
 /* Represents the many different ways we can access our data */
@@ -70,7 +73,7 @@
 
 %%
 
-program : functions { programBlock = new NProgram(*$1); }
+program : functions { programBlock = new NProgram(*$1); $$->SETLOC(); }
         | error END {}
         ;
 
@@ -78,7 +81,7 @@ functions : function { $$ = new FunctionList(); $$->push_back($1); }
           | functions function { $$->push_back($2); }
           ;
 
-function : DEF identifier TLEFTBRACKET arguments TRIGHTBRACKET TCOLON datatype statementblock KEND { $$ = new NFunction(*$2, *$4, $7, *$8); }
+function : DEF identifier TLEFTBRACKET arguments TRIGHTBRACKET TCOLON datatype statementblock KEND { $$ = new NFunction(*$2, *$4, $7, *$8); $$->SETLOC(); }
          | DEF identifier TLEFTBRACKET arguments error TRIGHTBRACKET TCOLON datatype statementblock KEND {}
          | error KEND {}
          ;
@@ -88,7 +91,7 @@ arguments : %empty { $$ = new ArgumentList(); }
           | arguments TCOMMA argument { $1->push_back($3); }
           ;
 
-argument : identifier TCOLON datatype { $$ = new NArgument(*$1, $3); }
+argument : identifier TCOLON datatype { $$ = new NArgument(*$1, $3); $$->SETLOC(); }
          ;
 
 statementblock : %empty { $$ = new StatementList(); }
@@ -105,10 +108,10 @@ statement : ifstatement | assignstatement | whilestatement | inputstatement | ou
           | error KEND {}
           ;
 
-exprstatement : expressions TSEMICOLON { $$ = new NExprStatement(*$1); }
+exprstatement : expressions TSEMICOLON { $$ = new NExprStatement(*$1); $$->SETLOC(); }
               ;
 
-defstatement : VAR identifiers TCOLON datatype TSEMICOLON { $$ = new NDefStatement($4, *$2); }
+defstatement : VAR identifiers TCOLON datatype TSEMICOLON { $$ = new NDefStatement($4, *$2); $$->SETLOC(); }
 //             | VAR identifiers TCOLON datatype TASSIGN expression TSEMICOLON { $$ = new NDefStatement($4, *$2, *$6); }
              ;
 
@@ -116,20 +119,20 @@ identifiers : identifier { $$ = new IdentifierList(); $$->push_back($1); }
             | identifiers TCOMMA identifier { $1->push_back($3); }
             ;
 
-identifier : TIDENTIFIER { $$ = new NIdentifier(*$1); delete $1; }
+identifier : TIDENTIFIER { $$ = new NIdentifier(*$1); delete $1; $$->SETLOC(); }
            ;
 
 datatype : INTEGER | FLOAT | STRING
          ;
 
-inputstatement : INPUT identifiers TSEMICOLON { $$ = new NInputStatement(*$2); }
+inputstatement : INPUT identifiers TSEMICOLON { $$ = new NInputStatement(*$2); $$->SETLOC(); }
                ;
 
-outputstatement : OUTPUT expressions TSEMICOLON { $$ = new NOutputStatement(*$2); }
+outputstatement : OUTPUT expressions TSEMICOLON { $$ = new NOutputStatement(*$2); $$->SETLOC(); }
                 ;
 
-returnstatement : RETURN TSEMICOLON { $$ = new NReturnStatement(); }
-                | RETURN expression TSEMICOLON { $$ = new NReturnStatement(*$2); }
+returnstatement : RETURN TSEMICOLON { $$ = new NReturnStatement(); $$->SETLOC(); }
+                | RETURN expression TSEMICOLON { $$ = new NReturnStatement(*$2); $$->SETLOC(); }
                 ;
 
 expressions : expression { $$ = new ExpressionList(); $$->push_back($1); }
@@ -138,49 +141,49 @@ expressions : expression { $$ = new ExpressionList(); $$->push_back($1); }
             | expressions TCOMMA boolexpression { $1->push_back($3); }
             ;
 
-assignstatement : identifier TASSIGN expression TSEMICOLON { $$ = new NAssignStatement(*$1, *$3); }
+assignstatement : identifier TASSIGN expression TSEMICOLON { $$ = new NAssignStatement(*$1, *$3); $$->SETLOC(); }
                 ;
 
-ifstatement : IF boolexpression THEN statementblock KEND { $$ = new NIfStatement(*$2, *$4); }
+ifstatement : IF boolexpression THEN statementblock KEND { $$ = new NIfStatement(*$2, *$4); $$->SETLOC(); }
             | IF boolexpression error THEN statementblock KEND {}
-            | IF boolexpression THEN statementblock ELSE statementblock KEND { $$ = new NIfStatement(*$2, *$4, *$6); }
+            | IF boolexpression THEN statementblock ELSE statementblock KEND { $$ = new NIfStatement(*$2, *$4, *$6); $$->SETLOC(); }
             | IF boolexpression error THEN statementblock ELSE statementblock KEND {}
             ;
 
-whilestatement : WHILE boolexpression DO statementblock KEND { $$ = new NWhileStatement(*$2, *$4); }
+whilestatement : WHILE boolexpression DO statementblock KEND { $$ = new NWhileStatement(*$2, *$4); $$->SETLOC(); }
                | WHILE boolexpression error DO statementblock KEND {}
                ;
 
 expression : term { $$ = $1; }
-           | expression TPLUS term { $$ = new NBinaryOperator(*$1, $2, *$3); }
-           | expression TMINUS term { $$ = new NBinaryOperator(*$1, $2, *$3); }
+           | expression TPLUS term { $$ = new NBinaryOperator(*$1, $2, *$3); $$->SETLOC(); }
+           | expression TMINUS term { $$ = new NBinaryOperator(*$1, $2, *$3); $$->SETLOC(); }
            ;
 
 term : factor { $$ = $1; }
-     | term TMULTIPLY factor { $$ = new NBinaryOperator(*$1, $2, *$3); }
-     | term TDIVIDE factor { $$ = new NBinaryOperator(*$1, $2, *$3); }
+     | term TMULTIPLY factor { $$ = new NBinaryOperator(*$1, $2, *$3); $$->SETLOC(); }
+     | term TDIVIDE factor { $$ = new NBinaryOperator(*$1, $2, *$3); $$->SETLOC(); }
      ;
 
 factor : identifier { $<identifier>$ = $1; }
-       | TINTEGER { $<ninteger>$ = new NInteger(atol($1->c_str())); delete $1; }
-       | TFLOAT { $<nfloat>$ = new NFloat(atof($1->c_str())); delete $1; }
+       | TINTEGER { $<ninteger>$ = new NInteger(atol($1->c_str())); delete $1; $$->SETLOC(); }
+       | TFLOAT { $<nfloat>$ = new NFloat(atof($1->c_str())); delete $1; $$->SETLOC(); }
        | methodcall { $<method_call>$ = $1; }
        | TLEFTBRACKET expression TRIGHTBRACKET { $$ = $2; }
        ;
 
-methodcall : identifier TLEFTBRACKET expressions TRIGHTBRACKET { $$ = new NMethodCall(*$1, *$3); }
-           | identifier TLEFTBRACKET TRIGHTBRACKET { $$ = new NMethodCall(*$1); }
+methodcall : identifier TLEFTBRACKET expressions TRIGHTBRACKET { $$ = new NMethodCall(*$1, *$3); $$->SETLOC(); }
+           | identifier TLEFTBRACKET TRIGHTBRACKET { $$ = new NMethodCall(*$1); $$->SETLOC(); }
            ;
 
 boolexpression : boolterm { $$ = $1; }
-               | boolexpression OR boolterm { $$ = new NBinaryOperator(*$1, $2, *$3); }
+               | boolexpression OR boolterm { $$ = new NBinaryOperator(*$1, $2, *$3); $$->SETLOC(); }
                ;
 
 boolterm : boolfactor { $$ = $1; }
-         | boolterm AND boolfactor { $$ = new NBinaryOperator(*$1, $2, *$3); }
+         | boolterm AND boolfactor { $$ = new NBinaryOperator(*$1, $2, *$3); $$->SETLOC(); }
          ;
 
-boolfactor : expression relation expression { $$ = new NBinaryOperator(*$1, $2, *$3); }
+boolfactor : expression relation expression { $$ = new NBinaryOperator(*$1, $2, *$3); $$->SETLOC(); }
            | TLEFTBRACKET boolexpression TRIGHTBRACKET { $$ = $2; }
            ;
 

@@ -4,6 +4,12 @@
 using namespace std;
 using namespace llvm;
 
+extern char filename[500];
+extern vector<string> buf;
+extern int yynerrs;
+
+void llvmerror(char const *, int&, int&, int&);
+
 /* Compile the AST into a module */
 void CodeGenContext::generateCode(NProgram& root) {
     std::cout << "Generating code...\n";
@@ -74,7 +80,7 @@ Value* NIdentifier::codeGen(CodeGenContext& context) {
         }
     }
     if (!found) {
-        std::cerr << "undeclared variable " << name << std::endl;
+        llvmerror("error: undeclared variable", line, column, length);
         return nullptr;
     }
     return new LoadInst(locals[name], "", false, context.currentBlock());
@@ -107,6 +113,8 @@ Value* NBinaryOperator::codeGen(CodeGenContext& context) {
     CmpInst::Predicate pred;
     Value *L = lhs.codeGen(context);
     Value *R = rhs.codeGen(context);
+    if (L == nullptr || R == nullptr) return nullptr;
+
     switch (op) {
     case TPLUS:
         instr = Instruction::Add;
@@ -183,7 +191,7 @@ Value* NBinaryOperator::codeGen(CodeGenContext& context) {
         instr = Instruction::Or;
         goto math;
     default:
-        std::cerr << "Invalid binary operator" << std::endl;
+        llvmerror("error: invalid binary operator", line, column, length);
     }
     return nullptr;
 math:
@@ -208,7 +216,7 @@ Value* NAssignStatement::codeGen(CodeGenContext& context) {
         }
     }
     if (!found) {
-        std::cerr << "undeclared variable " << identifier.name << std::endl;
+        llvmerror("error: undeclared variable", line, column, length);
         return nullptr;
     }
 
@@ -243,7 +251,11 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     context.pushBlock(thenBlock);
 
     Value *thenValue = conditionCodeGen(context, thenblock);
-    if (thenValue == nullptr) return nullptr;
+    if (thenValue == nullptr) {
+        context.popBlock();
+        function->getBasicBlockList().pop_back();
+        return nullptr;
+    }
     BranchInst::Create(mergeBlock, context.currentBlock());
 
     context.popBlock();
@@ -253,7 +265,12 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     context.pushBlock(elseBlock);
 
     Value *elseValue = conditionCodeGen(context, elseblock);
-    if (elseValue == nullptr) return nullptr;
+    if (elseValue == nullptr) {
+        context.popBlock();
+        function->getBasicBlockList().pop_back();
+        function->getBasicBlockList().pop_back();
+        return nullptr;
+    }
     BranchInst::Create(mergeBlock, context.currentBlock());
 
     context.popBlock();
@@ -300,9 +317,13 @@ Value* NWhileStatement::codeGen(CodeGenContext& context) {
     context.pushBlock(condBlock);
 
     Value *condValue = condition.codeGen(context);
+    if (condValue == nullptr) {
+        context.popBlock();
+        function->getBasicBlockList().pop_back();
+        return nullptr;
+    }
     condValue = new FCmpInst(*context.currentBlock(), CmpInst::FCMP_ONE,
                              condValue, ConstantFP::get(getGlobalContext(), APFloat(0.0)));
-    if (condValue == nullptr) return nullptr;
     BranchInst::Create(loopBlock, afterBlock, condValue, context.currentBlock());
 
     context.popBlock();
@@ -312,7 +333,12 @@ Value* NWhileStatement::codeGen(CodeGenContext& context) {
     context.pushBlock(loopBlock);
 
     Value *loopValue = conditionCodeGen(context, block);
-    if (loopValue == nullptr) return nullptr;
+    if (loopValue == nullptr) {
+        context.popBlock();
+        function->getBasicBlockList().pop_back();
+        function->getBasicBlockList().pop_back();
+        return nullptr;
+    }
     BranchInst::Create(condBlock, context.currentBlock());
 
     context.popBlock();
@@ -366,7 +392,8 @@ Value* NMethodCall::codeGen(CodeGenContext& context) {
     std::cout << "Creating method call " << id.name << std::endl;
     Function *function = context.module->getFunction(id.name.c_str());
     if (function == nullptr) {
-        std::cerr << "no such function " << id.name << std::endl;
+        llvmerror("error: no such function", line, column, length);
+        return nullptr;
     }
     std::vector<Value*> args;
     for (ExpressionList::const_iterator it = arguments.begin();
@@ -431,6 +458,10 @@ Value* NDefStatement::codeGen(CodeGenContext& context)
     AllocaInst *alloc;
     for (it = identifiers.begin(); it != identifiers.end(); it++) {
         std::cout << (*it)->name << " ";
+        if (context.locals().find((*it)->name) != context.locals().end()) {
+            llvmerror("error: redefinition", line, column, length);
+            return nullptr;
+        }
         alloc = new AllocaInst(typeOf(type), (*it)->name.c_str(), context.currentBlock());
         context.locals()[(*it)->name] = alloc;
     }
@@ -448,4 +479,15 @@ Value* NProgram::codeGen(CodeGenContext& context)
         last = (**it).codeGen(context);
     }
     return last;
+}
+
+
+void llvmerror(char const *s, int& line, int& column, int& length) {
+    printf("%s:%d:%d: %s\n%s\n", filename, line, column-length+1, s, buf[line].c_str());
+    printf("%*s", column-length, "");
+    for (int i = 0; i < length; i++) {
+      printf("%c", '^');
+    }
+    printf("\n");
+    yynerrs++;
 }
