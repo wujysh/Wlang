@@ -4,7 +4,8 @@
 #include "llvm/IR/Type.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/LLVMContext.h"
-#include "llvm/PassManager.h"
+#include "llvm/IR/PassManager.h"
+#include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/CallingConv.h"
 #include "llvm/Bitcode/ReaderWriter.h"
@@ -12,6 +13,8 @@
 #include "llvm/Assembly/PrintModulePass.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/Analysis/Passes.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/Transforms/Scalar.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
 #include "llvm/ExecutionEngine/JIT.h"
@@ -36,6 +39,7 @@ public:
     Module *module;
     CodeGenContext(): module(new Module("main", getGlobalContext())) { }
 
+    void runLLVMOptimizations1();
     void generateCode(NProgram& root);
     GenericValue runCode();
     std::map<std::string, Value*>& locals() { return blocks.back()->locals; }

@@ -9,20 +9,47 @@ extern vector<string> buf;
 extern int yynerrs;
 
 
+void CodeGenContext::runLLVMOptimizations1()
+{
+    // Set up the function-level optimizations we want
+    llvm::legacy::FunctionPassManager passManager(module);
+    //passManager.add(llvm::createVerifierPass());
+    passManager.add(llvm::createPromoteMemoryToRegisterPass());
+    passManager.add(llvm::createReassociatePass());
+    passManager.add(llvm::createGVNPass());
+    passManager.add(llvm::createAggressiveDCEPass());
+    passManager.add(llvm::createVerifierPass());
+    
+    llvm::Module::iterator function, lastFunction;
+
+    // run them across all functions
+    passManager.doInitialization();
+    for (function = module->begin(), lastFunction = module->end(); function != lastFunction; ++function) {
+        passManager.run(*function);
+    }
+    passManager.doFinalization();
+}
+
 /* Compile the AST into a module */
 void CodeGenContext::generateCode(NProgram& root) {
     std::cout << "Generating code...\n";
 
     root.codeGen(*this); /* emit bytecode for the toplevel block */
 
+    std::cout << "Code is generated.\n";
+    
     /* Print the bytecode in a human-readable format
        to see if our program compiled properly
      */
-    std::cout << "Code is generated.\n";
-    PassManager pm;
+    llvm::legacy::PassManager pm;
     pm.add(createPrintModulePass(&outs()));
     pm.run(*module);
     std::cout << "PassManager finished." << std::endl;
+
+    runLLVMOptimizations1();
+
+    // Print out all of the generated code.
+    module->dump();
 }
 
 /* Executes the AST by running the main function */

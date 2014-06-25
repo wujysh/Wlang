@@ -41,7 +41,7 @@
    they represent.
  */
 %token <nstring> TIDENTIFIER "IDENTIFIER" TINTEGER "INTEGER" TFLOAT "FLOAT" TSTRING "STRING"
-%token <token> VAR IF THEN ELSE WHILE DO INPUT OUTPUT FUNCTION DEF AS RETURN INTEGER FLOAT STRING
+%token <token> VAR IF THEN ELSE WHILE DO INPUT OUTPUT FUNCTION DEF AS RETURN INTEGER FLOAT STRING VOID
 %token <token> AND "&&" OR "||" KBEGIN "BEGIN" KEND "END"
 %token <token> TPLUS "+" TMINUS "-" TMULTIPLY "*" TDIVIDE "/" TASSIGN "="
 %token <token> TLESS "<" TLESSEQUAL "<=" TGREATER ">" TGREATEREQUAL ">=" TNOTEQUAL "<>" TEQUAL "=="
@@ -122,7 +122,7 @@ identifiers : identifier { $$ = new IdentifierList(); $$->push_back($1); }
 identifier : TIDENTIFIER { $$ = new NIdentifier(*$1); delete $1; $$->SETLOC(); }
            ;
 
-datatype : INTEGER | FLOAT | STRING
+datatype : INTEGER | FLOAT | STRING | VOID
          ;
 
 inputstatement : INPUT identifiers TSEMICOLON { $$ = new NInputStatement(*$2); $$->SETLOC(); }

@@ -4,10 +4,10 @@
 def add(x: integer, y: integer): integer
 	var z: integer;
 	z = 1 + 1;  // z = 2;
-	return z
+	return z;
 end
 
-def empty(): float
+def empty(): void
 	return;
 end
 

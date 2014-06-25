@@ -56,6 +56,7 @@ def                                     { return TOKEN(DEF); }
 var                                     { return TOKEN(VAR); }
 as                                      { return TOKEN(AS); }
 return                                  { return TOKEN(RETURN); }
+void                                    { return TOKEN(VOID); }
 begin                                   { return TOKEN(KBEGIN); }
 end                                     { return TOKEN(KEND); }
 
