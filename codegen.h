@@ -11,7 +11,7 @@
 #include "llvm/Analysis/Verifier.h"
 #include "llvm/Assembly/PrintModulePass.h"
 #include "llvm/IR/IRBuilder.h"
-//#include "llvm/IR/ModuleProvider.h"
+#include "llvm/Analysis/Passes.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
 #include "llvm/ExecutionEngine/JIT.h"
@@ -43,3 +43,6 @@ public:
     void pushBlock(BasicBlock *block) { blocks.push_back(new CodeGenBlock()); blocks.back()->block = block; }
     void popBlock() { CodeGenBlock *top = blocks.back(); blocks.pop_back(); if (top != nullptr) delete top; }
 };
+
+
+void llvmerror(char const *, int&, int&, int&);

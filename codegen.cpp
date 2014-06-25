@@ -8,7 +8,6 @@ extern char filename[500];
 extern vector<string> buf;
 extern int yynerrs;
 
-void llvmerror(char const *, int&, int&, int&);
 
 /* Compile the AST into a module */
 void CodeGenContext::generateCode(NProgram& root) {
@@ -483,8 +482,8 @@ Value* NProgram::codeGen(CodeGenContext& context)
 
 
 void llvmerror(char const *s, int& line, int& column, int& length) {
-    printf("%s:%d:%d: %s\n%s\n", filename, line, column-length+1, s, buf[line].c_str());
-    printf("%*s", column-length, "");
+    printf("%s:%d:%d: %s\n%s\n", filename, line, column, s, buf[line].c_str());
+    printf("%*s", column-1, "");
     for (int i = 0; i < length; i++) {
         printf("%c", '^');
     }

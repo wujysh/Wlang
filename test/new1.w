@@ -16,7 +16,7 @@ def main(): integer
 	var y: float;
 	z = 5;
 	input x, y, z, str;
-	add1(1, 3), add(x, y);
+	add1(1, 3), add(xxxxxxxx, y);
 	output add(1, 2);
 	if x >= 0 && add(x, y) <= 100 || x <> y then
 		empty();
