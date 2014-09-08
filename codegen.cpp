@@ -277,11 +277,6 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     context.pushBlock(thenBlock);
 
     Value *thenValue = conditionCodeGen(context, thenblock);
-    if (thenValue == nullptr) {
-        context.popBlock();
-        function->getBasicBlockList().pop_back();
-        return nullptr;
-    }
     BranchInst::Create(mergeBlock, context.currentBlock());
 
     context.popBlock();
@@ -291,12 +286,6 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     context.pushBlock(elseBlock);
 
     Value *elseValue = conditionCodeGen(context, elseblock);
-    if (elseValue == nullptr) {
-        context.popBlock();
-        function->getBasicBlockList().pop_back();
-        function->getBasicBlockList().pop_back();
-        return nullptr;
-    }
     BranchInst::Create(mergeBlock, context.currentBlock());
 
     context.popBlock();
@@ -305,9 +294,10 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     function->getBasicBlockList().push_back(mergeBlock);
     context.pushBlock(mergeBlock);
 
-    PHINode *PN = PHINode::Create(Type::getVoidTy(getGlobalContext()), 2, "if.tmp", mergeBlock);
-    PN->addIncoming(thenValue, thenBlock);
-    PN->addIncoming(elseValue, elseBlock);
+    PHINode *PN = PHINode::Create(Type::getDoubleTy(getGlobalContext()), 2, "if.tmp", mergeBlock);
+    std::cout << thenValue->getType()->getTypeID() << std::endl;
+    PN->setIncomingBlock(0, thenBlock);
+    PN->setIncomingBlock(1, elseBlock);
     ReturnInst::Create(getGlobalContext(), PN, mergeBlock);
 
     context.popBlock();
