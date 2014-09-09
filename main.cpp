@@ -52,6 +52,7 @@ int main(int argc, char **argv) {
         CodeGenContext context;
         //createCoreFunctions(context);
         context.generateCode(*programBlock);
+        context.runCode();
 
         if (yynerrs > 0) {
             terminateCompile();

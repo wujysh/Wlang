@@ -24,7 +24,7 @@ void CodeGenContext::runLLVMOptimizations1()
 
     // run them across all functions
     passManager.doInitialization();
-    for (function = module->begin(), lastFunction = module->end(); function != lastFunction; ++function) {
+    for (function = module->begin(); function != module->end(); ++function) {
         passManager.run(*function);
     }
     passManager.doFinalization();
@@ -46,7 +46,7 @@ void CodeGenContext::generateCode(NProgram& root) {
     pm.run(*module);
     std::cout << "PassManager finished." << std::endl;
 
-    runLLVMOptimizations1();
+    // runLLVMOptimizations1();
 
     // Print out all of the generated code.
     module->dump();
@@ -277,11 +277,6 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     context.pushBlock(thenBlock);
 
     Value *thenValue = conditionCodeGen(context, thenblock);
-    if (thenValue == nullptr) {
-        context.popBlock();
-        function->getBasicBlockList().pop_back();
-        return nullptr;
-    }
     BranchInst::Create(mergeBlock, context.currentBlock());
 
     context.popBlock();
@@ -291,12 +286,6 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     context.pushBlock(elseBlock);
 
     Value *elseValue = conditionCodeGen(context, elseblock);
-    if (elseValue == nullptr) {
-        context.popBlock();
-        function->getBasicBlockList().pop_back();
-        function->getBasicBlockList().pop_back();
-        return nullptr;
-    }
     BranchInst::Create(mergeBlock, context.currentBlock());
 
     context.popBlock();
@@ -305,12 +294,11 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     function->getBasicBlockList().push_back(mergeBlock);
     context.pushBlock(mergeBlock);
 
-    PHINode *PN = PHINode::Create(Type::getVoidTy(getGlobalContext()), 2, "if.tmp", mergeBlock);
-    PN->addIncoming(thenValue, thenBlock);
-    PN->addIncoming(elseValue, elseBlock);
+    PHINode *PN = PHINode::Create(Type::getDoubleTy(getGlobalContext()), 2, "if.tmp", mergeBlock);
+    std::cout << thenValue->getType()->getTypeID() << std::endl;
+    PN->setIncomingBlock(0, thenBlock);
+    PN->setIncomingBlock(1, elseBlock);
     ReturnInst::Create(getGlobalContext(), PN, mergeBlock);
-
-    context.popBlock();
 
     return PN; 
 }
