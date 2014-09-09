@@ -300,8 +300,6 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     PN->setIncomingBlock(1, elseBlock);
     ReturnInst::Create(getGlobalContext(), PN, mergeBlock);
 
-    context.popBlock();
-
     return PN; 
 }
 
