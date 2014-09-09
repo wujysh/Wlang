@@ -24,7 +24,7 @@ void CodeGenContext::runLLVMOptimizations1()
 
     // run them across all functions
     passManager.doInitialization();
-    for (function = module->begin(), lastFunction = module->end(); function != lastFunction; ++function) {
+    for (function = module->begin(); function != module->end(); ++function) {
         passManager.run(*function);
     }
     passManager.doFinalization();
@@ -46,7 +46,7 @@ void CodeGenContext::generateCode(NProgram& root) {
     pm.run(*module);
     std::cout << "PassManager finished." << std::endl;
 
-    runLLVMOptimizations1();
+    // runLLVMOptimizations1();
 
     // Print out all of the generated code.
     module->dump();
