@@ -367,7 +367,6 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     std::cout << thenValue->getType()->getTypeID() << std::endl;
     PN->setIncomingBlock(0, thenBlock);
     PN->setIncomingBlock(1, elseBlock);
-    ReturnInst::Create(getGlobalContext(), PN, mergeBlock);
 
     return PN; 
 }
