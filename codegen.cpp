@@ -262,9 +262,21 @@ Value* NBinaryOperator::codeGen(CodeGenContext& context) {
         goto relation;
     case AND:
         instr = Instruction::And;
+        if (L->getType()->getTypeID() != Type::TypeID::IntegerTyID)
+            L = CastInst::Create(Instruction::FPToSI, L,
+                                 Type::getInt1Ty(getGlobalContext()), "castand", context.currentBlock());
+        if (R->getType()->getTypeID() != Type::TypeID::IntegerTyID)
+            R = CastInst::Create(Instruction::FPToSI, R,
+                                 Type::getInt1Ty(getGlobalContext()), "castand", context.currentBlock());
         goto math;
     case OR:
         instr = Instruction::Or;
+        if (L->getType()->getTypeID() != Type::TypeID::IntegerTyID)
+            L = CastInst::Create(Instruction::FPToSI, L,
+                                 Type::getInt1Ty(getGlobalContext()), "castand", context.currentBlock());
+        if (R->getType()->getTypeID() != Type::TypeID::IntegerTyID)
+            R = CastInst::Create(Instruction::FPToSI, R,
+                                 Type::getInt1Ty(getGlobalContext()), "castand", context.currentBlock());
         goto math;
     default:
         llvmerror("semantic error: invalid binary operator", line, column, length);
@@ -318,6 +330,9 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     if (condValue == nullptr) return nullptr;
 
     //std::cout << condValue->getType()->getTypeID() << std::endl;
+    if (condValue->getType()->getTypeID() == Type::TypeID::IntegerTyID)
+        condValue = CastInst::Create(Instruction::UIToFP, condValue,
+                                     Type::getDoubleTy(getGlobalContext()), "ifcast", context.currentBlock());
     condValue = new FCmpInst(*context.currentBlock(), CmpInst::FCMP_ONE,
                              condValue, ConstantFP::get(getGlobalContext(), APFloat(0.0)));
     Function *function = context.currentBlock()->getParent();
