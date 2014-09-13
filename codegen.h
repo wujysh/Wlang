@@ -9,6 +9,7 @@
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/CallingConv.h"
 #include "llvm/Bitcode/ReaderWriter.h"
+#include <llvm/IR/Constants.h>
 #include "llvm/Analysis/Verifier.h"
 #include "llvm/Assembly/PrintModulePass.h"
 #include "llvm/IR/IRBuilder.h"
@@ -44,6 +45,7 @@ public:
     GenericValue runCode();
     std::map<std::string, Value*>& locals() { return blocks.back()->locals; }
     BasicBlock *currentBlock() { return blocks.back()->block; }
+    Module &getModule() { return *module; }
     void pushBlock(BasicBlock *block) { blocks.push_back(new CodeGenBlock()); blocks.back()->block = block; }
     void popBlock() { CodeGenBlock *top = blocks.back(); blocks.pop_back(); if (top != nullptr) delete top; }
 };
