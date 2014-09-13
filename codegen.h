@@ -40,7 +40,7 @@ public:
     Module *module;
     CodeGenContext(): module(new Module("main", getGlobalContext())) { }
 
-    void runLLVMOptimizations1();
+    void runLLVMOptimizations();
     void generateCode(NProgram& root);
     GenericValue runCode();
     std::map<std::string, Value*>& locals() { return blocks.back()->locals; }

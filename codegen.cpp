@@ -8,11 +8,13 @@ extern char filename[500];
 extern vector<string> buf;
 extern int yynerrs;
 
-void CodeGenContext::runLLVMOptimizations1()
+void CodeGenContext::runLLVMOptimizations()
 {
+/*  
     // Set up the function-level optimizations we want
     llvm::legacy::FunctionPassManager passManager(module);
-    //passManager.add(llvm::createVerifierPass());
+    
+    //llvm::PassManager passManager;
     passManager.add(llvm::createPromoteMemoryToRegisterPass());
     passManager.add(llvm::createReassociatePass());
     passManager.add(llvm::createGVNPass());
@@ -27,6 +29,52 @@ void CodeGenContext::runLLVMOptimizations1()
         passManager.run(*function);
     }
     passManager.doFinalization();
+*/
+    std::cout << "======================" << std::endl;
+    std::cout << "Optimizations started." << std::endl;
+
+    llvm::legacy::PassManager passManager;
+
+    //passManager.add(llvm::createStripDeadPrototypesPass());
+    //passManager.add(llvm::createSimplifyLibCallsPass());
+    //passManager.add(llvm::createArgumentPromotionPass());
+    //passManager.add(llvm::createDeadArgEliminationPass());
+
+    passManager.add(llvm::createBasicAliasAnalysisPass());
+//  passManager.add(llvm::createGVNPass());
+    passManager.add(llvm::createLICMPass());
+    passManager.add(llvm::createDeadInstEliminationPass());
+    passManager.add(llvm::createLCSSAPass());
+    passManager.add(llvm::createLoopIdiomPass());
+    passManager.add(llvm::createLoopInstSimplifyPass());
+    passManager.add(llvm::createLoopSimplifyPass());
+    passManager.add(llvm::createIndVarSimplifyPass());
+    passManager.add(llvm::createLoopStrengthReducePass());
+    passManager.add(llvm::createLoopUnrollPass());
+
+    //passManager.add(llvm::createFunctionAttrsPass());
+    //passManager.add(llvm::createFunctionInliningPass());
+    //passManager.add(llvm::createFunctionInliningPass());
+    passManager.add(llvm::createDeadStoreEliminationPass());
+    passManager.add(llvm::createDeadCodeEliminationPass());
+
+    passManager.add(llvm::createReassociatePass());
+    //passManager.add(llvm::createConstantMergePass());
+    passManager.add(llvm::createConstantPropagationPass());
+    passManager.add(llvm::createSROAPass());
+    passManager.add(llvm::createInstructionSimplifierPass());
+    //passManager.add(llvm::createDeadArgEliminationPass());
+    //passManager.add(llvm::createBBVectorizePass());
+
+    //passManager.add(llvm::createGlobalOptimizerPass());
+    passManager.add(llvm::createGlobalsModRefPass());
+
+    //passManager.add(llvm::createPartialInliningPass());
+//  passManager.add(llvm::createPartialSpecializationPass());
+
+    passManager.run(*module);
+
+    std::cout << "Optimizations finished." << std::endl;
 }
 
 /* Compile the AST into a module */
@@ -40,12 +88,9 @@ void CodeGenContext::generateCode(NProgram& root) {
     /* Print the bytecode in a human-readable format
        to see if our program compiled properly
      */
-    llvm::legacy::PassManager pm;
-    pm.add(createPrintModulePass(&outs()));
-    pm.run(*module);
-    std::cout << "PassManager finished." << std::endl;
+    module->dump();
 
-    // runLLVMOptimizations1();
+    runLLVMOptimizations();
 
     // Print out all of the generated code.
     module->dump();
@@ -54,12 +99,15 @@ void CodeGenContext::generateCode(NProgram& root) {
 /* Executes the AST by running the main function */
 GenericValue CodeGenContext::runCode() {
     std::cout << "Running code...\n";
-	//ExistingModuleProvider *mp = new ExistingModuleProvider(module);
-	//ExecutionEngine *ee = ExecutionEngine::create(module, false);
-	//vector<GenericValue> noargs;
-	//GenericValue v = ee->runFunction(mainFunction, noargs);
+	// ExecutionEngine *ee = ExecutionEngine::create(module, nullptr);
+ //    assert(ee != nullptr);
+	// vector<GenericValue> noargs;
+ //    assert(mainFunction != nullptr);
+ //    GenericValue v = ee->runFunction(mainFunction, noargs);
+    
+    GenericValue v = GenericValue();
     std::cout << "Code was run.\n";
-	//return v;
+	return v;
 }
 
 /* Returns an LLVM type based on the identifier */

@@ -41,7 +41,7 @@
    match our tokens.l lex file. We also define the node type
    they represent.
  */
-%token <nstring> TIDENTIFIER "identifier" TINTEGER "INTEGER" TFLOAT "FLOAT" TSTRING "STRING"
+%token <nstring> TIDENTIFIER "IDENTIFIER" TINTEGER "INTEGER" TFLOAT "FLOAT" TSTRING "STRING"
 %token <token> VAR IF THEN ELSE WHILE DO INPUT OUTPUT FUNCTION DEF AS RETURN INTEGER FLOAT STRING VOID
 %token <token> AND "&&" OR "||" KBEGIN "BEGIN" KEND "END"
 %token <token> TPLUS "+" TMINUS "-" TMULTIPLY "*" TDIVIDE "/" TASSIGN "="
