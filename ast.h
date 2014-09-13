@@ -43,7 +43,7 @@ public:
         line = _line;  column = _column;  length = _length;
     }
     virtual ~Node() {}
-    virtual llvm::Value* codeGen(CodeGenContext& context) {}
+    virtual llvm::Value* codeGen(CodeGenContext& context) = 0;
 };
 
 class NExpression : public Node {

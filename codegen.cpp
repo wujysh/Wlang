@@ -8,7 +8,6 @@ extern char filename[500];
 extern vector<string> buf;
 extern int yynerrs;
 
-
 void CodeGenContext::runLLVMOptimizations1()
 {
     // Set up the function-level optimizations we want
@@ -71,7 +70,7 @@ static Type *typeOf(int type)
     } else if (type == FLOAT) {
         return Type::getDoubleTy(getGlobalContext());
     } else if (type == STRING) {
-        //return Type::getLabelTy(getGlobalContext());
+        return Type::getInt8PtrTy(getGlobalContext());
     }
     return Type::getVoidTy(getGlobalContext());
 }
@@ -90,7 +89,10 @@ Value* NFloat::codeGen(CodeGenContext& context) {
 
 Value* NString::codeGen(CodeGenContext& context) {
     std::cout << "Creating string: " << value << std::endl;
-    //return ConstantArray::get(Type::getLabelTy(getGlobalContext()), value.c_str());
+    auto str = ConstantDataArray::getString(getGlobalContext(), StringRef(value));
+    return new GlobalVariable(context.getModule(), str->getType(),
+                              true, GlobalValue::LinkerPrivateLinkage,
+                              str);
 }
 
 Value* NIdentifier::codeGen(CodeGenContext& context) {
@@ -246,7 +248,13 @@ Value* NAssignStatement::codeGen(CodeGenContext& context) {
         return nullptr;
     }
 
-    return new StoreInst(value.codeGen(context), locals[identifier.name], false, context.currentBlock());
+    auto v = value.codeGen(context);
+    if (v->getType()->getTypeID() == 14) { // pointer, just for string
+        std::cout << "GetElementPtrInst" << std::endl;
+        auto gep = GetElementPtrInst::Create(locals[identifier.name], v, "",context.currentBlock());
+        return gep;
+    }
+    return new StoreInst(v, locals[identifier.name], false, context.currentBlock());
 }
 
 Value* NArgument::codeGen(CodeGenContext& context) {
@@ -476,7 +484,12 @@ Value* NDefStatement::codeGen(CodeGenContext& context)
             llvmerror("semantic error: redefinition", line, column, length);
             return nullptr;
         }
-        alloc = new AllocaInst(typeOf(type), (*it)->name.c_str(), context.currentBlock());
+        if (type != STRING) {
+            alloc = new AllocaInst(typeOf(type), (*it)->name.c_str(), context.currentBlock());
+
+        } else {
+            alloc = new AllocaInst(typeOf(type), nullptr, (*it)->name.c_str(), context.currentBlock());
+        }
         context.locals()[(*it)->name] = alloc;
     }
     std::cout << std::endl;
@@ -494,7 +507,6 @@ Value* NProgram::codeGen(CodeGenContext& context)
     }
     return last;
 }
-
 
 void llvmerror(char const *s, int& line, int& column, int& length) {
     printf("%s:%d:%d: %s\n%s\n", filename, line, column, s, buf[line].c_str());

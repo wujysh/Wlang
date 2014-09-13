@@ -26,6 +26,7 @@
     class NArgument *argument;
     class NInteger *ninteger;
     class NFloat *nfloat;
+    class NString *actual_nstring;
     class NMethodCall *method_call;
     StatementList *statement_vector;
     ArgumentList *argument_vector;
@@ -40,7 +41,7 @@
    match our tokens.l lex file. We also define the node type
    they represent.
  */
-%token <nstring> TIDENTIFIER "IDENTIFIER" TINTEGER "INTEGER" TFLOAT "FLOAT" TSTRING "STRING"
+%token <nstring> TIDENTIFIER "identifier" TINTEGER "INTEGER" TFLOAT "FLOAT" TSTRING "STRING"
 %token <token> VAR IF THEN ELSE WHILE DO INPUT OUTPUT FUNCTION DEF AS RETURN INTEGER FLOAT STRING VOID
 %token <token> AND "&&" OR "||" KBEGIN "BEGIN" KEND "END"
 %token <token> TPLUS "+" TMINUS "-" TMULTIPLY "*" TDIVIDE "/" TASSIGN "="
@@ -167,6 +168,7 @@ term : factor { $$ = $1; }
 factor : identifier { $<identifier>$ = $1; }
        | TINTEGER { $<ninteger>$ = new NInteger(atol($1->c_str())); delete $1; $$->SETLOC(); }
        | TFLOAT { $<nfloat>$ = new NFloat(atof($1->c_str())); delete $1; $$->SETLOC(); }
+       | TSTRING { $<actual_nstring>$ = new NString(*$1); delete $1; $$->SETLOC(); }
        | methodcall { $<method_call>$ = $1; }
        | TLEFTBRACKET expression TRIGHTBRACKET { $$ = $2; }
        ;
