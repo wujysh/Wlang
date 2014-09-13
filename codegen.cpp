@@ -35,13 +35,13 @@ void CodeGenContext::runLLVMOptimizations()
 
     llvm::legacy::PassManager passManager;
 
-    //passManager.add(llvm::createStripDeadPrototypesPass());
-    //passManager.add(llvm::createSimplifyLibCallsPass());
-    //passManager.add(llvm::createArgumentPromotionPass());
-    //passManager.add(llvm::createDeadArgEliminationPass());
+    passManager.add(llvm::createStripDeadPrototypesPass());
+    //passManager.add(llvm::createSimplifyLibCallsPass());  // not found
+    passManager.add(llvm::createArgumentPromotionPass());
+    passManager.add(llvm::createDeadArgEliminationPass());
 
     passManager.add(llvm::createBasicAliasAnalysisPass());
-//  passManager.add(llvm::createGVNPass());
+//    passManager.add(llvm::createGVNPass());  // disable because it will cause conflict
     passManager.add(llvm::createLICMPass());
     passManager.add(llvm::createDeadInstEliminationPass());
     passManager.add(llvm::createLCSSAPass());
@@ -52,25 +52,23 @@ void CodeGenContext::runLLVMOptimizations()
     passManager.add(llvm::createLoopStrengthReducePass());
     passManager.add(llvm::createLoopUnrollPass());
 
-    //passManager.add(llvm::createFunctionAttrsPass());
-    //passManager.add(llvm::createFunctionInliningPass());
-    //passManager.add(llvm::createFunctionInliningPass());
+    //passManager.add(llvm::createFunctionAttrsPass());  // will change return type of main to void
+    //passManager.add(llvm::createFunctionInliningPass());  // disable because it will remove main function
     passManager.add(llvm::createDeadStoreEliminationPass());
     passManager.add(llvm::createDeadCodeEliminationPass());
 
     passManager.add(llvm::createReassociatePass());
-    //passManager.add(llvm::createConstantMergePass());
+    passManager.add(llvm::createConstantMergePass());// will remove useless string def
     passManager.add(llvm::createConstantPropagationPass());
     passManager.add(llvm::createSROAPass());
     passManager.add(llvm::createInstructionSimplifierPass());
-    //passManager.add(llvm::createDeadArgEliminationPass());
-    //passManager.add(llvm::createBBVectorizePass());
+    //passManager.add(llvm::createBBVectorizePass());  // disable because it will cause conflict
 
-    //passManager.add(llvm::createGlobalOptimizerPass());
+    //passManager.add(llvm::createGlobalOptimizerPass());  // disable because it will cause conflict
     passManager.add(llvm::createGlobalsModRefPass());
 
-    //passManager.add(llvm::createPartialInliningPass());
-//  passManager.add(llvm::createPartialSpecializationPass());
+    passManager.add(llvm::createPartialInliningPass());
+//    passManager.add(llvm::createPartialSpecializationPass());  // not found
 
     passManager.run(*module);
 

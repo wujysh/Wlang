@@ -1,4 +1,18 @@
 ﻿#include <stack>
+#include <typeinfo>
+#include "llvm/Analysis/AliasSetTracker.h"
+#include "llvm/Analysis/FindUsedTypes.h"
+#include "llvm/Analysis/IntervalPartition.h"
+#include "llvm/Analysis/Passes.h"
+#include "llvm/Analysis/PostDominators.h"
+#include "llvm/Analysis/ScalarEvolution.h"
+#include "llvm/Analysis/Verifier.h"
+#include "llvm/Assembly/PrintModulePass.h"
+#include "llvm/Bitcode/ReaderWriter.h"
+#include "llvm/CodeGen/Passes.h"
+#include "llvm/ExecutionEngine/GenericValue.h"
+#include "llvm/ExecutionEngine/JIT.h"
+#include "llvm/ExecutionEngine/Interpreter.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Type.h"
@@ -8,20 +22,16 @@
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/CallingConv.h"
-#include "llvm/Bitcode/ReaderWriter.h"
 #include <llvm/IR/Constants.h>
-#include "llvm/Analysis/Verifier.h"
-#include "llvm/Assembly/PrintModulePass.h"
 #include "llvm/IR/IRBuilder.h"
-#include "llvm/Analysis/Passes.h"
 #include "llvm/IR/DataLayout.h"
-#include "llvm/Transforms/Scalar.h"
-#include "llvm/Support/TargetSelect.h"
-#include "llvm/ExecutionEngine/GenericValue.h"
-#include "llvm/ExecutionEngine/JIT.h"
-#include "llvm/ExecutionEngine/Interpreter.h"
 #include "llvm/Support/raw_ostream.h"
-#include <typeinfo>
+#include "llvm/Support/TargetSelect.h"
+#include "llvm/Transforms/Instrumentation.h"
+#include "llvm/Transforms/IPO.h"
+#include "llvm/Transforms/Scalar.h"
+#include "llvm/Transforms/Vectorize.h"
+#include "llvm/Transforms/Utils/UnifyFunctionExitNodes.h"
 
 using namespace llvm;
 
