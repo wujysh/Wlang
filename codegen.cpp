@@ -458,6 +458,10 @@ Value* NInputStatement::codeGen(CodeGenContext& context) {
 
 Value* NOutputStatement::codeGen(CodeGenContext& context) {
     std::cout << "Creating output statement " << std::endl;
+    for (auto iter = expressions.begin(); iter != expressions.end(); ++iter) {
+        auto value = (*iter)->codeGen(context);
+        std::cout << value->getType()->getTypeID() << endl;
+    }
     return nullptr;
 }
 
