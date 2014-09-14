@@ -308,15 +308,23 @@ Value* NAssignStatement::codeGen(CodeGenContext& context) {
 
     auto v = value.codeGen(context);
     if (v->getType()->getTypeID() == 14) { // pointer, just for string
-        std::cout << "GetElementPtrInst" << std::endl;
-        auto gep = GetElementPtrInst::Create(locals[identifier.name], v, "",context.currentBlock());
+        auto gep = GetElementPtrInst::CreateInBounds(locals[identifier.name], v, "",context.currentBlock());
         return gep;
     }
     return new StoreInst(v, locals[identifier.name], false, context.currentBlock());
 }
 
-Value* NArgument::codeGen(CodeGenContext& context) {
+Value* NArgument::codeGen(CodeGenContext& context)
+{
     std::cout << "Creating argument " << identifier.name << std::endl;
+    AllocaInst *alloc;
+    if (type != STRING) {
+        alloc = new AllocaInst(typeOf(type), identifier.name.c_str(), context.currentBlock());
+
+    } else {
+        alloc = new AllocaInst(typeOf(type), nullptr, identifier.name.c_str(), context.currentBlock());
+    }
+    context.locals()[identifier.name] = alloc;
     return nullptr;
 }
 
@@ -484,7 +492,9 @@ Value* NMethodCall::codeGen(CodeGenContext& context) {
     std::vector<Value*> args;
     for (ExpressionList::const_iterator it = arguments.begin();
          it != arguments.end(); it++) {
-        args.push_back((**it).codeGen(context));
+        auto value = (**it).codeGen(context);
+        value->dump();
+        args.push_back(value);
     }
     return CallInst::Create(function, args, "", context.currentBlock());
 }
@@ -504,12 +514,14 @@ Value* NFunction::codeGen(CodeGenContext& context)
     vector<Type*> argTypes;
     for (ArgumentList::const_iterator it = arguments.begin();
          it != arguments.end(); it++) {
-        argTypes.push_back(typeOf((**it).type));
+        argTypes.push_back(typeOf((*it)->type));
     }
     /* Create the top level interpreter function to call as entry */
     FunctionType *ftype = FunctionType::get(typeOf(returnType), argTypes, false);
+    ftype->dump();
     auto name = id.name;
     Function *function = Function::Create(ftype, GlobalValue::InternalLinkage, name.c_str(), context.module);
+    function->dump();
 
     if (name == "main")
         context.mainFunction = function;
@@ -525,6 +537,12 @@ Value* NFunction::codeGen(CodeGenContext& context)
     BasicBlock *bblock = BasicBlock::Create(getGlobalContext(), "entry", function, 0);
     context.pushBlock(bblock);
 
+    // Create arguments into symbol table
+    for (auto iter = arguments.begin(); iter != arguments.end(); ++iter) {
+        (*iter)->codeGen(context);
+    }
+
+    // Create function body
     Value *last = nullptr;
     for (StatementList::const_iterator it = block.begin();
          it != block.end(); it++) {
