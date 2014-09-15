@@ -157,7 +157,7 @@ Value* NIdentifier::codeGen(CodeGenContext& context) {
         llvmerror("semantic error: undeclared variable", line, column, length);
         return nullptr;
     }
-    return new LoadInst(locals[name], "", false, context.currentBlock());
+    return locals[name];
 }
 
 bool NBinaryOperator::autoUpgradeType(CodeGenContext& context,
@@ -317,14 +317,6 @@ Value* NAssignStatement::codeGen(CodeGenContext& context) {
 Value* NArgument::codeGen(CodeGenContext& context)
 {
     std::cout << "Creating argument " << identifier.name << std::endl;
-    AllocaInst *alloc;
-    if (type != STRING) {
-        alloc = new AllocaInst(typeOf(type), identifier.name.c_str(), context.currentBlock());
-
-    } else {
-        alloc = new AllocaInst(typeOf(type), nullptr, identifier.name.c_str(), context.currentBlock());
-    }
-    context.locals()[identifier.name] = alloc;
     return nullptr;
 }
 
@@ -493,6 +485,8 @@ Value* NMethodCall::codeGen(CodeGenContext& context) {
     for (ExpressionList::const_iterator it = arguments.begin();
          it != arguments.end(); it++) {
         auto value = (**it).codeGen(context);
+        if (value->getType()->getTypeID() == 14)
+            value = new LoadInst(value, "", false, context.currentBlock());
         value->dump();
         args.push_back(value);
     }
@@ -518,10 +512,8 @@ Value* NFunction::codeGen(CodeGenContext& context)
     }
     /* Create the top level interpreter function to call as entry */
     FunctionType *ftype = FunctionType::get(typeOf(returnType), argTypes, false);
-    ftype->dump();
     auto name = id.name;
     Function *function = Function::Create(ftype, GlobalValue::InternalLinkage, name.c_str(), context.module);
-    function->dump();
 
     if (name == "main")
         context.mainFunction = function;
@@ -538,8 +530,14 @@ Value* NFunction::codeGen(CodeGenContext& context)
     context.pushBlock(bblock);
 
     // Create arguments into symbol table
-    for (auto iter = arguments.begin(); iter != arguments.end(); ++iter) {
-        (*iter)->codeGen(context);
+    unsigned index = 0;
+    for (Function::arg_iterator iter = function->arg_begin(); index != arguments.size();
+         ++iter, ++index) {
+        auto name = arguments[index]->identifier.name;
+        std::cout << name << std::endl;
+        iter->setName(name);
+
+        context.locals()[name] = iter;
     }
 
     // Create function body
