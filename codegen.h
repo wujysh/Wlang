@@ -22,7 +22,7 @@
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/CallingConv.h"
-#include <llvm/IR/Constants.h>
+#include "llvm/IR/Constants.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/Support/raw_ostream.h"
@@ -32,6 +32,7 @@
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Vectorize.h"
 #include "llvm/Transforms/Utils/UnifyFunctionExitNodes.h"
+#include "llvm/Support/MemoryBuffer.h"
 
 using namespace llvm;
 
