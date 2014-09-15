@@ -8,20 +8,39 @@ extern char filename[500];
 extern vector<string> buf;
 extern int yynerrs;
 
+llvm::Function* createPrintfFunction(CodeGenContext& context)
+{
+    std::vector<llvm::Type*> printf_arg_types;
+    printf_arg_types.push_back(llvm::Type::getInt8PtrTy(getGlobalContext())); //char*
+
+    llvm::FunctionType* printf_type =
+        llvm::FunctionType::get(
+            llvm::Type::getInt32Ty(getGlobalContext()), printf_arg_types, true);
+
+    llvm::Function *func = llvm::Function::Create(
+                printf_type, llvm::Function::ExternalLinkage,
+                llvm::Twine("printf"),
+                context.module
+           );
+    func->setCallingConv(llvm::CallingConv::C);
+    return func;
+}
+
+
 void CodeGenContext::runLLVMOptimizations()
 {
 /*  
     // Set up the function-level optimizations we want
-    llvm::legacy::FunctionPassManager passManager(module);
+    legacy::FunctionPassManager passManager(module);
     
-    //llvm::PassManager passManager;
-    passManager.add(llvm::createPromoteMemoryToRegisterPass());
-    passManager.add(llvm::createReassociatePass());
-    passManager.add(llvm::createGVNPass());
-    passManager.add(llvm::createAggressiveDCEPass());
-    passManager.add(llvm::createVerifierPass());
+    //PassManager passManager;
+    passManager.add(createPromoteMemoryToRegisterPass());
+    passManager.add(createReassociatePass());
+    passManager.add(createGVNPass());
+    passManager.add(createAggressiveDCEPass());
+    passManager.add(createVerifierPass());
     
-    llvm::Module::iterator function, lastFunction;
+    Module::iterator function, lastFunction;
 
     // run them across all functions
     passManager.doInitialization();
@@ -33,42 +52,42 @@ void CodeGenContext::runLLVMOptimizations()
     std::cout << "======================" << std::endl;
     std::cout << "Optimizations started." << std::endl;
 
-    llvm::legacy::PassManager passManager;
+    legacy::PassManager passManager;
 
-    passManager.add(llvm::createStripDeadPrototypesPass());
-    //passManager.add(llvm::createSimplifyLibCallsPass());  // not found
-    passManager.add(llvm::createArgumentPromotionPass());
-    passManager.add(llvm::createDeadArgEliminationPass());
+    passManager.add(createStripDeadPrototypesPass());
+    //passManager.add(createSimplifyLibCallsPass());  // not found
+    passManager.add(createArgumentPromotionPass());
+    passManager.add(createDeadArgEliminationPass());
 
-    passManager.add(llvm::createBasicAliasAnalysisPass());
-//    passManager.add(llvm::createGVNPass());  // disable because it will cause conflict
-    passManager.add(llvm::createLICMPass());
-    passManager.add(llvm::createDeadInstEliminationPass());
-    passManager.add(llvm::createLCSSAPass());
-    passManager.add(llvm::createLoopIdiomPass());
-    passManager.add(llvm::createLoopInstSimplifyPass());
-    passManager.add(llvm::createLoopSimplifyPass());
-    passManager.add(llvm::createIndVarSimplifyPass());
-    passManager.add(llvm::createLoopStrengthReducePass());
-    passManager.add(llvm::createLoopUnrollPass());
+    passManager.add(createBasicAliasAnalysisPass());
+//    passManager.add(createGVNPass());  // disable because it will cause conflict
+    passManager.add(createLICMPass());
+    passManager.add(createDeadInstEliminationPass());
+    passManager.add(createLCSSAPass());
+    passManager.add(createLoopIdiomPass());
+    passManager.add(createLoopInstSimplifyPass());
+    passManager.add(createLoopSimplifyPass());
+    passManager.add(createIndVarSimplifyPass());
+    passManager.add(createLoopStrengthReducePass());
+    passManager.add(createLoopUnrollPass());
 
-    //passManager.add(llvm::createFunctionAttrsPass());  // will change return type of main to void
-    //passManager.add(llvm::createFunctionInliningPass());  // disable because it will remove main function
-    passManager.add(llvm::createDeadStoreEliminationPass());
-    passManager.add(llvm::createDeadCodeEliminationPass());
+    //passManager.add(createFunctionAttrsPass());  // will change return type of main to void
+    //passManager.add(createFunctionInliningPass());  // disable because it will remove main function
+    passManager.add(createDeadStoreEliminationPass());
+    passManager.add(createDeadCodeEliminationPass());
 
-    passManager.add(llvm::createReassociatePass());
-    passManager.add(llvm::createConstantMergePass());// will remove useless string def
-    passManager.add(llvm::createConstantPropagationPass());
-    passManager.add(llvm::createSROAPass());
-    passManager.add(llvm::createInstructionSimplifierPass());
-    //passManager.add(llvm::createBBVectorizePass());  // disable because it will cause conflict
+    passManager.add(createReassociatePass());
+    passManager.add(createConstantMergePass());// will remove useless string def
+    passManager.add(createConstantPropagationPass());
+    passManager.add(createSROAPass());
+    passManager.add(createInstructionSimplifierPass());
+    //passManager.add(createBBVectorizePass());  // disable because it will cause conflict
 
-    //passManager.add(llvm::createGlobalOptimizerPass());  // disable because it will cause conflict
-    passManager.add(llvm::createGlobalsModRefPass());
+    //passManager.add(createGlobalOptimizerPass());  // disable because it will cause conflict
+    passManager.add(createGlobalsModRefPass());
 
-    passManager.add(llvm::createPartialInliningPass());
-//    passManager.add(llvm::createPartialSpecializationPass());  // not found
+    passManager.add(createPartialInliningPass());
+//    passManager.add(createPartialSpecializationPass());  // not found
 
     passManager.run(*module);
 
@@ -157,7 +176,7 @@ Value* NIdentifier::codeGen(CodeGenContext& context) {
         llvmerror("semantic error: undeclared variable", line, column, length);
         return nullptr;
     }
-    return locals[name];
+    return new LoadInst(locals[name], "", false, context.currentBlock());;
 }
 
 bool NBinaryOperator::autoUpgradeType(CodeGenContext& context,
@@ -456,15 +475,6 @@ Value* NInputStatement::codeGen(CodeGenContext& context) {
     return nullptr;
 }
 
-Value* NOutputStatement::codeGen(CodeGenContext& context) {
-    std::cout << "Creating output statement " << std::endl;
-    for (auto iter = expressions.begin(); iter != expressions.end(); ++iter) {
-        auto value = (*iter)->codeGen(context);
-        std::cout << value->getType()->getTypeID() << endl;
-    }
-    return nullptr;
-}
-
 Value* NReturnStatement::codeGen(CodeGenContext& context) {
     std::cout << "Creating return statement " << std::endl;
     if (value == nullptr) {
@@ -597,3 +607,57 @@ void llvmerror(char const *s, int& line, int& column, int& length) {
     printf("\n");
     yynerrs++;
 }
+
+Value* NOutputStatement::codeGen(CodeGenContext& context) {
+    std::cout << "Creating output statement " << std::endl;
+
+    // register expression list
+    vector<Type*> argTypes;
+    vector<string> argNames;
+    string printFormatString;
+    int i = 0;
+    for (auto iter = expressions.begin(); iter != expressions.end(); ++iter, ++i) {
+        auto value = (*iter)->codeGen(context);
+        auto type = value->getType();
+        std::cout << type->getTypeID() << std::endl;
+        argTypes.push_back(type);
+        switch (type->getTypeID()) {
+        case Type::TypeID::DoubleTyID:
+            printFormatString += "%lf\n";
+            break;
+        case Type::TypeID::IntegerTyID:
+            printFormatString += "%lld\n";
+            break;
+        case Type::TypeID::PointerTyID:
+            printFormatString += "%s\n";
+            break;
+        default:
+            return nullptr;
+        }
+    }
+    // enter inner block
+
+    // build up format string for printf
+    Constant *format_const = ConstantDataArray::getString(getGlobalContext(), printFormatString);
+    GlobalVariable *var =
+        new GlobalVariable(
+            *context.module, ArrayType::get(IntegerType::get(getGlobalContext(), 8), printFormatString.length()+1),
+            true, GlobalValue::PrivateLinkage, format_const, ".str");
+    Constant *zero = Constant::getNullValue(IntegerType::getInt32Ty(getGlobalContext()));
+
+    vector<Constant*> indices;
+    indices.push_back(zero);
+    indices.push_back(zero);
+    Constant *var_ref = ConstantExpr::getGetElementPtr(var, indices);
+
+    vector<Value*> args;
+    args.push_back(var_ref);
+
+    // build call printf
+
+    Function* printfFn = createPrintfFunction(context);
+    CallInst *call = CallInst::Create(printfFn, makeArrayRef(args), "", context.currentBlock());
+
+    return call;
+}
+

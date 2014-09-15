@@ -50,7 +50,6 @@ int main(int argc, char **argv) {
         printAST();
 
         CodeGenContext context;
-        createCoreFunctions(context);
         context.generateCode(*programBlock);
         context.runCode();
 
