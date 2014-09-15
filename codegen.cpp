@@ -116,13 +116,14 @@ void CodeGenContext::generateCode(NProgram& root) {
 /* Executes the AST by running the main function */
 GenericValue CodeGenContext::runCode() {
     std::cout << "Running code...\n";
-	// ExecutionEngine *ee = ExecutionEngine::create(module, nullptr);
- //    assert(ee != nullptr);
-	// vector<GenericValue> noargs;
- //    assert(mainFunction != nullptr);
- //    GenericValue v = ee->runFunction(mainFunction, noargs);
+    assert(module != nullptr);
+    InitializeNativeTarget();
+	ExecutionEngine *ee = ExecutionEngine::create(module, nullptr);
+    assert(ee != nullptr);
+	vector<GenericValue> noargs;
+    assert(mainFunction != nullptr);
+    GenericValue v = ee->runFunction(mainFunction, noargs);
     
-    GenericValue v = GenericValue();
     std::cout << "Code was run.\n";
 	return v;
 }
