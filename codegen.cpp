@@ -86,6 +86,7 @@ void CodeGenContext::runLLVMOptimizations()
     //passManager.add(createGlobalOptimizerPass());  // disable because it will cause conflict
     passManager.add(createGlobalsModRefPass());
 
+    passManager.add(createVerifierPass());
     passManager.add(createPartialInliningPass());
 //    passManager.add(createPartialSpecializationPass());  // not found
 
@@ -114,18 +115,19 @@ void CodeGenContext::generateCode(NProgram& root) {
 }
 
 /* Executes the AST by running the main function */
-GenericValue CodeGenContext::runCode() {
+void CodeGenContext::runCode() {
     std::cout << "Running code...\n";
     assert(module != nullptr);
     InitializeNativeTarget();
 	ExecutionEngine *ee = ExecutionEngine::create(module, nullptr);
     assert(ee != nullptr);
-	vector<GenericValue> noargs;
+	vector<string> noargs;
+    const char *const * noenv = nullptr;
     assert(mainFunction != nullptr);
-    GenericValue v = ee->runFunction(mainFunction, noargs);
+    int v = ee->runFunctionAsMain(mainFunction, noargs, noenv);
     
     std::cout << "Code was run.\n";
-	return v;
+	return;
 }
 
 /* Returns an LLVM type based on the identifier */
