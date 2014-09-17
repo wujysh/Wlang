@@ -8,7 +8,6 @@ def main(): integer
 	c = "a";
 	c = "5swe";
 	c = "3wew4564we";
-	d = c;
 	return 0;
 end
 

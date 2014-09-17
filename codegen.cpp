@@ -86,6 +86,7 @@ void CodeGenContext::runLLVMOptimizations()
     //passManager.add(createGlobalOptimizerPass());  // disable because it will cause conflict
     passManager.add(createGlobalsModRefPass());
 
+    passManager.add(createVerifierPass());
     passManager.add(createPartialInliningPass());
 //    passManager.add(createPartialSpecializationPass());  // not found
 
@@ -114,18 +115,19 @@ void CodeGenContext::generateCode(NProgram& root) {
 }
 
 /* Executes the AST by running the main function */
-GenericValue CodeGenContext::runCode() {
+void CodeGenContext::runCode() {
     std::cout << "Running code...\n";
     assert(module != nullptr);
     InitializeNativeTarget();
 	ExecutionEngine *ee = ExecutionEngine::create(module, nullptr);
     assert(ee != nullptr);
-	vector<GenericValue> noargs;
+	vector<string> noargs;
+    const char *const * noenv = nullptr;
     assert(mainFunction != nullptr);
-    GenericValue v = ee->runFunction(mainFunction, noargs);
+    int v = ee->runFunctionAsMain(mainFunction, noargs, noenv);
     
     std::cout << "Code was run.\n";
-	return v;
+	return;
 }
 
 /* Returns an LLVM type based on the identifier */
@@ -136,7 +138,7 @@ static Type *typeOf(int type)
     } else if (type == FLOAT) {
         return Type::getDoubleTy(getGlobalContext());
     } else if (type == STRING) {
-        return Type::getInt8PtrTy(getGlobalContext());
+        return PointerType::get(Type::getInt8Ty(getGlobalContext()), 0);
     }
     return Type::getVoidTy(getGlobalContext());
 }
@@ -328,8 +330,12 @@ Value* NAssignStatement::codeGen(CodeGenContext& context) {
 
     auto v = value.codeGen(context);
     if (v->getType()->getTypeID() == 14) { // pointer, just for string
-        auto gep = GetElementPtrInst::CreateInBounds(locals[identifier.name], v, "",context.currentBlock());
-        return gep;
+        auto zeroValue = ConstantInt::get(getGlobalContext(), APInt(32, StringRef("0"), 10));
+        vector<Value*> index;
+        index.push_back(zeroValue);
+        index.push_back(zeroValue);
+        v = GetElementPtrInst::CreateInBounds(v, index, "arraydecry",context.currentBlock());
+        //return v;
     }
     return new StoreInst(v, locals[identifier.name], false, context.currentBlock());
 }
@@ -356,11 +362,10 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     Function *function = context.currentBlock()->getParent();
 
     BasicBlock *thenBlock = BasicBlock::Create(getGlobalContext(), "if.then", function);
-    BasicBlock *elseBlock = BasicBlock::Create(getGlobalContext(), "if.else");
-    BasicBlock *mergeBlock = BasicBlock::Create(getGlobalContext(), "if.cont");
+    BasicBlock *elseBlock = BasicBlock::Create(getGlobalContext(), "if.else", function);
+    BasicBlock *mergeBlock = BasicBlock::Create(getGlobalContext(), "if.cont", function);
 
     BranchInst::Create(thenBlock, elseBlock, condValue, context.currentBlock());
-
 
     // create then block
     context.pushBlock(thenBlock);
@@ -371,7 +376,6 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     context.popBlock();
 
     // create else block
-    function->getBasicBlockList().push_back(elseBlock);
     context.pushBlock(elseBlock);
 
     Value *elseValue = conditionCodeGen(context, elseblock);
@@ -380,15 +384,10 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     context.popBlock();
 
     // create PHI node
-    function->getBasicBlockList().push_back(mergeBlock);
+    
     context.pushBlock(mergeBlock);
 
-    PHINode *PN = PHINode::Create(Type::getDoubleTy(getGlobalContext()), 2, "if.tmp", mergeBlock);
-    std::cout << thenValue->getType()->getTypeID() << std::endl;
-    PN->setIncomingBlock(0, thenBlock);
-    PN->setIncomingBlock(1, elseBlock);
-
-    return PN; 
+    return thenValue; 
 }
 
 Value* NIfStatement::conditionCodeGen(CodeGenContext& context, StatementList& block)

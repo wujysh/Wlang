@@ -53,7 +53,7 @@ public:
 
     void runLLVMOptimizations();
     void generateCode(NProgram& root);
-    GenericValue runCode();
+    void runCode();
     std::map<std::string, Value*>& locals() { return blocks.back()->locals; }
     BasicBlock *currentBlock() { return blocks.back()->block; }
     Module &getModule() { return *module; }
