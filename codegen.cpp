@@ -138,7 +138,7 @@ static Type *typeOf(int type)
     } else if (type == FLOAT) {
         return Type::getDoubleTy(getGlobalContext());
     } else if (type == STRING) {
-        return Type::getInt8PtrTy(getGlobalContext());
+        return PointerType::get(Type::getInt8Ty(getGlobalContext()), 0);
     }
     return Type::getVoidTy(getGlobalContext());
 }
@@ -330,8 +330,12 @@ Value* NAssignStatement::codeGen(CodeGenContext& context) {
 
     auto v = value.codeGen(context);
     if (v->getType()->getTypeID() == 14) { // pointer, just for string
-        auto gep = GetElementPtrInst::CreateInBounds(locals[identifier.name], v, "",context.currentBlock());
-        return gep;
+        auto zeroValue = ConstantInt::get(getGlobalContext(), APInt(32, StringRef("0"), 10));
+        vector<Value*> index;
+        index.push_back(zeroValue);
+        index.push_back(zeroValue);
+        v = GetElementPtrInst::CreateInBounds(v, index, "arraydecry",context.currentBlock());
+        //return v;
     }
     return new StoreInst(v, locals[identifier.name], false, context.currentBlock());
 }
