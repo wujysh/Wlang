@@ -362,11 +362,10 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     Function *function = context.currentBlock()->getParent();
 
     BasicBlock *thenBlock = BasicBlock::Create(getGlobalContext(), "if.then", function);
-    BasicBlock *elseBlock = BasicBlock::Create(getGlobalContext(), "if.else");
-    BasicBlock *mergeBlock = BasicBlock::Create(getGlobalContext(), "if.cont");
+    BasicBlock *elseBlock = BasicBlock::Create(getGlobalContext(), "if.else", function);
+    BasicBlock *mergeBlock = BasicBlock::Create(getGlobalContext(), "if.cont", function);
 
     BranchInst::Create(thenBlock, elseBlock, condValue, context.currentBlock());
-
 
     // create then block
     context.pushBlock(thenBlock);
@@ -377,7 +376,6 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     context.popBlock();
 
     // create else block
-    function->getBasicBlockList().push_back(elseBlock);
     context.pushBlock(elseBlock);
 
     Value *elseValue = conditionCodeGen(context, elseblock);
@@ -386,15 +384,10 @@ Value* NIfStatement::codeGen(CodeGenContext& context)
     context.popBlock();
 
     // create PHI node
-    function->getBasicBlockList().push_back(mergeBlock);
+    
     context.pushBlock(mergeBlock);
 
-    PHINode *PN = PHINode::Create(Type::getDoubleTy(getGlobalContext()), 2, "if.tmp", mergeBlock);
-    std::cout << thenValue->getType()->getTypeID() << std::endl;
-    PN->setIncomingBlock(0, thenBlock);
-    PN->setIncomingBlock(1, elseBlock);
-
-    return PN; 
+    return thenValue; 
 }
 
 Value* NIfStatement::conditionCodeGen(CodeGenContext& context, StatementList& block)
